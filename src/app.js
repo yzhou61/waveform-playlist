@@ -5,6 +5,7 @@ import Delegator from 'dom-delegator';
 import EventEmitter from 'event-emitter';
 
 import Playlist from './Playlist';
+import TimedAnnotationList from 'annotations/src/TimedAnnotationList';
 
 export function init(options={}, ee=EventEmitter(), delegator=Delegator()) {
     if (options.container === undefined) {
@@ -43,6 +44,8 @@ export function init(options={}, ee=EventEmitter(), delegator=Delegator()) {
     }
 
     let playlist = new Playlist();
+    playlist.annotationList = new TimedAnnotationList();
+
     playlist.setSampleRate(config.sampleRate);
     playlist.setSamplesPerPixel(config.samplesPerPixel);
     playlist.setAudioContext(config.ac);
