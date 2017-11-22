@@ -248,7 +248,7 @@ class AnnotationList {
           oninput: (e) => {
             // needed currently for references
             // eslint-disable-next-line no-param-reassign
-            note.lines = [e.target.innerText];
+            note.lines = e.target.innerText.split('\n');
           },
           onkeypress: (e) => {
             if (e.which === 13 || e.keyCode === 13) {
@@ -274,7 +274,7 @@ class AnnotationList {
             h('span.annotation-lines',
               linesConfig,
               [
-                note.lines,
+                note.lines.join('\n'),
               ],
             ),
             h('span.annotation-actions',

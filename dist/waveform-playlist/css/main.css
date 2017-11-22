@@ -141,7 +141,8 @@
         font-size: 16px;
         line-height: 27px; }
       .playlist .annotations .annotations-text .annotation .annotation-lines {
-        flex-grow: 10; }
+        flex-grow: 10;
+        white-space: pre; }
       .playlist .annotations .annotations-text .annotation .annotation-actions {
         flex-basis: auto;
         width: 80px;

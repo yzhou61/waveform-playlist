@@ -66,7 +66,8 @@ var notes = [
    "id": "f000007", 
    "language": "eng", 
    "lines": [
-    "Feed'st thy light's flame with self-substantial fuel,"
+    "Feed'st thy light's flame",
+    "with self-substantial fuel,"
    ]
   }, 
   {
