@@ -138,6 +138,10 @@ export default class {
     this.waveHeight = height;
   }
 
+  setIsAutomaticScroll(bool) {
+    this.isAutomaticScroll = bool;
+  }
+
   setColors(colors) {
     this.colors = colors;
   }

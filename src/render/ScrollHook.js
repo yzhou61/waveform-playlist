@@ -15,10 +15,13 @@ export default class {
 
       if (playlist.isAutomaticScroll) {
         const rect = node.getBoundingClientRect();
-        const cursorRect = node.querySelector('.cursor').getBoundingClientRect();
+        const cursorNode = node.querySelector('.cursor');
+        if (cursorNode) {
+          const cursorRect = cursorNode.getBoundingClientRect();
 
-        if (cursorRect.right > rect.right || cursorRect.right < 0) {
-          playlist.scrollLeft = playlist.playbackSeconds;
+          if (cursorRect.right > rect.right || cursorRect.right < 0) {
+            playlist.scrollLeft = playlist.playbackSeconds;
+          }
         }
       }
 
