@@ -13,7 +13,7 @@ export default class {
     if (!playlist.isScrolling) {
       const el = node;
 
-      if (playlist.isAutomaticScroll) {
+      if (playlist.isAutomaticScroll && playlist.isPlaying()) {
         const rect = node.getBoundingClientRect();
         const cursorNode = node.querySelector('.cursor');
         if (cursorNode) {
