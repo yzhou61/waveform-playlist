@@ -904,7 +904,7 @@ export default class {
     return h('div.playlist',
       {
         attributes: {
-          style: 'overflow: hidden; position: relative;',
+          style: 'position: relative;',
         },
       },
       containerChildren,

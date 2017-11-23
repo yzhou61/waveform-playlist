@@ -100,63 +100,63 @@
       background: #ccc; }
     .playlist .controls input[type=range]:focus::-moz-range-track {
       background: #ccc; }
-  .playlist .annotations .annotations-boxes {
+  .playlist .annotations-boxes {
     text-align: center; }
-  .playlist .annotations .annotation-box {
+  .playlist .annotation-box {
     border: 2px dashed grey;
     padding: 0 10px; }
-    .playlist .annotations .annotation-box .resize-handle {
+    .playlist .annotation-box .resize-handle {
       background: grey;
       opacity: 0.3;
       cursor: ew-resize; }
-    .playlist .annotations .annotation-box .id {
+    .playlist .annotation-box .id {
       cursor: pointer;
       display: inline-block;
       width: 100%;
       height: 100%; }
-  .playlist .annotations .annotations-text {
+  .playlist .annotations-text {
     font-size: 19px;
     font-weight: 300;
     margin-top: 1em;
     height: 160px;
     overflow-x: hidden;
     overflow-y: auto; }
-    .playlist .annotations .annotations-text .annotation {
+    .playlist .annotations-text .annotation {
       display: flex;
       flex-direction: row;
       flex-wrap: nowrap;
       justify-content: flex-start;
       align-items: stretch; }
-      .playlist .annotations .annotations-text .annotation span {
+      .playlist .annotations-text .annotation span {
         margin: 0.3rem 0.6rem; }
-        .playlist .annotations .annotations-text .annotation span:last-of-type {
+        .playlist .annotations-text .annotation span:last-of-type {
           margin-right: 1.2rem; }
-      .playlist .annotations .annotations-text .annotation .annotation-id {
+      .playlist .annotations-text .annotation .annotation-id {
         font-size: 16px;
         line-height: 27px; }
-      .playlist .annotations .annotations-text .annotation .annotation-start {
+      .playlist .annotations-text .annotation .annotation-start {
         font-size: 16px;
         line-height: 27px; }
-      .playlist .annotations .annotations-text .annotation .annotation-end {
+      .playlist .annotations-text .annotation .annotation-end {
         font-size: 16px;
         line-height: 27px; }
-      .playlist .annotations .annotations-text .annotation .annotation-lines {
+      .playlist .annotations-text .annotation .annotation-lines {
         flex-grow: 10;
         white-space: pre; }
-      .playlist .annotations .annotations-text .annotation .annotation-actions {
+      .playlist .annotations-text .annotation .annotation-actions {
         flex-basis: auto;
         width: 80px;
         text-align: right;
         font-size: 16px; }
-        .playlist .annotations .annotations-text .annotation .annotation-actions i {
+        .playlist .annotations-text .annotation .annotation-actions i {
           margin-right: 0.6rem; }
-          .playlist .annotations .annotations-text .annotation .annotation-actions i:last-of-type {
+          .playlist .annotations-text .annotation .annotation-actions i:last-of-type {
             margin-right: 0; }
-          .playlist .annotations .annotations-text .annotation .annotation-actions i:hover {
+          .playlist .annotations-text .annotation .annotation-actions i:hover {
             color: orange;
             cursor: pointer; }
-  .playlist .annotations .current {
-    background-color: #EBF4F6; }
+    .playlist .annotations-text .current {
+      background-color: #EBF4F6; }
 
 .playlist .vocals {
   background-color: #c0dce0; }

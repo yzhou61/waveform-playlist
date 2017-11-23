@@ -173,7 +173,7 @@ class AnnotationList {
     const boxes = h('div.annotations-boxes',
       {
         attributes: {
-          style: 'height: 30px;',
+          style: 'height: 30px; overflow: hidden; position: relative;',
         },
       },
       this.annotations.map((note, i) => {
@@ -211,17 +211,6 @@ class AnnotationList {
           ],
         );
       }),
-    );
-
-    const boxesWrapper = h('div.annotations-boxes-wrapper',
-      {
-        attributes: {
-          style: 'overflow: hidden;',
-        },
-      },
-      [
-        boxes,
-      ],
     );
 
     const text = h('div.annotations-text',
@@ -285,12 +274,10 @@ class AnnotationList {
       }),
     );
 
-    return h('div.annotations',
-      [
-        boxesWrapper,
-        text,
-      ],
-    );
+    return [
+      boxes,
+      text,
+    ];
   }
 }
 
