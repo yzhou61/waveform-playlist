@@ -59,15 +59,27 @@ class AnnotationList {
           note.start = 0;
         }
 
+        this.playlist.ee.emit('annotationchange', note, annotationIndex, this.annotations, {
+          linkEndpoints: this.playlist.linkEndpoints,
+        });
+
         if (annotationIndex &&
           (annotations[annotationIndex - 1].end > note.start)) {
           annotations[annotationIndex - 1].end = note.start;
+
+          this.playlist.ee.emit('annotationchange', annotations[annotationIndex - 1], annotationIndex - 1, this.annotations, {
+            linkEndpoints: this.playlist.linkEndpoints,
+          });
         }
 
         if (this.playlist.linkEndpoints &&
           annotationIndex &&
           (annotations[annotationIndex - 1].end === originalVal)) {
           annotations[annotationIndex - 1].end = note.start;
+
+          this.playlist.ee.emit('annotationchange', annotations[annotationIndex - 1], annotationIndex - 1, this.annotations, {
+            linkEndpoints: this.playlist.linkEndpoints,
+          });
         }
       } else {
         // resizing to the right
@@ -78,15 +90,27 @@ class AnnotationList {
           note.end = this.playlist.duration;
         }
 
+        this.playlist.ee.emit('annotationchange', note, annotationIndex, this.annotations, {
+          linkEndpoints: this.playlist.linkEndpoints,
+        });
+
         if (annotationIndex < (annotations.length - 1) &&
           (annotations[annotationIndex + 1].start < note.end)) {
           annotations[annotationIndex + 1].start = note.end;
+
+          this.playlist.ee.emit('annotationchange', annotations[annotationIndex + 1], annotationIndex + 1, this.annotations, {
+            linkEndpoints: this.playlist.linkEndpoints,
+          });
         }
 
         if (this.playlist.linkEndpoints &&
           (annotationIndex < (annotations.length - 1)) &&
           (annotations[annotationIndex + 1].start === originalVal)) {
           annotations[annotationIndex + 1].start = note.end;
+
+          this.playlist.ee.emit('annotationchange', annotations[annotationIndex + 1], annotationIndex + 1, this.annotations, {
+            linkEndpoints: this.playlist.linkEndpoints,
+          });
         }
       }
 
@@ -238,6 +262,9 @@ class AnnotationList {
             // needed currently for references
             // eslint-disable-next-line no-param-reassign
             note.lines = e.target.innerText.split('\n');
+            this.playlist.ee.emit('annotationchange', note, i, this.annotations, {
+              linkEndpoints: this.playlist.linkEndpoints,
+            });
           },
           onkeypress: (e) => {
             if (e.which === 13 || e.keyCode === 13) {

@@ -419,6 +419,10 @@ export default class {
     return this.timeSelection.start !== this.timeSelection.end;
   }
 
+  setDurationFormat(format) {
+    this.durationFormat = format;
+  }
+
   /*
     start, end in seconds.
   */
