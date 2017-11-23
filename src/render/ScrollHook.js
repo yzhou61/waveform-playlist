@@ -27,7 +27,7 @@ export default class {
         if (cursorNode) {
           const cursorRect = cursorNode.getBoundingClientRect();
 
-          if (cursorRect.right > rect.right || cursorRect.right < 0) {
+          if (cursorRect.right > rect.right) {
             playlist.scrollLeft = Math.min(playlist.playbackSeconds, MAX_SCROLL_LEFT);
           }
         }
