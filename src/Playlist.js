@@ -871,7 +871,7 @@ export default class {
     return h('div.playlist-tracks',
       {
         attributes: {
-          style: 'overflow: auto;',
+          style: 'overflow: auto; position: relative;',
         },
         onscroll: (e) => {
           this.scrollLeft = pixelsToSeconds(
@@ -902,11 +902,6 @@ export default class {
     }
 
     return h('div.playlist',
-      {
-        attributes: {
-          style: 'position: relative;',
-        },
-      },
       containerChildren,
     );
   }
