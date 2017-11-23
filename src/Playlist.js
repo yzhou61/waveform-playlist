@@ -853,7 +853,7 @@ export default class {
   renderTimeScale() {
     const controlWidth = this.controls.show ? this.controls.width : 0;
     const timeScale = new TimeScale(this.duration, this.scrollLeft,
-      this.samplesPerPixel, this.sampleRate, controlWidth);
+      this.samplesPerPixel, this.sampleRate, controlWidth, this.colors.timeColor);
 
     return timeScale.render();
   }
