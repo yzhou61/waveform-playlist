@@ -137,8 +137,8 @@ class TimeScale {
           {
             attributes: {
               width: widthX,
-              height: 30,
-              style: 'position: absolute; left: 0; right: 0; top: 0; bottom: 0;',
+              height: 10,
+              style: 'position: absolute; left: 0; right: 0; bottom: 0;',
             },
             hook: new TimeScaleHook(canvasInfo, this.offset, this.samplesPerPixel, this.duration, this.color),
           },

@@ -34,7 +34,7 @@ export default class {
 
     this.fadeType = 'logarithmic';
     this.masterGain = 1;
-    this.annotations = [];
+    this.annotationList = [];
     this.durationFormat = 'hh:mm:ss.uuu';
     this.isAutomaticScroll = false;
     this.resetDrawTimer = undefined;
