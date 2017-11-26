@@ -13,9 +13,10 @@ class AnnotationList {
     this.playlist = playlist;
     this.resizeHandlers = [];
     this.editable = editable;
+    this.timeFormatter = timeformat(this.playlist.durationFormat);
     this.annotations = annotations.map(a =>
       // TODO support different formats later on.
-      inputAeneas(a),
+      inputAeneas(a, {timeFormatter: this.timeFormatter}),
     );
     this.setupInteractions();
 
@@ -26,6 +27,21 @@ class AnnotationList {
     this.playlist.isContinuousPlay = isContinuousPlay;
     this.playlist.linkEndpoints = linkEndpoints;
     this.length = this.annotations.length;
+  }
+
+  updateAnnotation(index, id, start, end, lines, lang) {
+    const note = {
+      id,
+      start,
+      end,
+      lines,
+      lang,
+      displayStart: this.timeFormatter(start),
+      displayEnd: this.timeFormatter(end)
+    }
+
+    this.annotations[index] = note;
+    return note;
   }
 
   setupInteractions() {
@@ -44,11 +60,17 @@ class AnnotationList {
     });
   }
 
+  emitAnnotationChange(note, index) {
+    this.playlist.ee.emit('annotationchange', note, index, this.annotations, {
+      linkEndpoints: this.playlist.linkEndpoints,
+    });
+  }
+
   setupEE(ee) {
     ee.on('dragged', (deltaTime, data) => {
       const annotationIndex = data.index;
       const annotations = this.annotations;
-      const note = annotations[annotationIndex];
+      let note = annotations[annotationIndex];
 
       // resizing to the left
       if (data.direction === 'left') {
@@ -59,27 +81,26 @@ class AnnotationList {
           note.start = 0;
         }
 
-        this.playlist.ee.emit('annotationchange', note, annotationIndex, this.annotations, {
-          linkEndpoints: this.playlist.linkEndpoints,
-        });
+        let updated = this.updateAnnotation(annotationIndex, note.id, note.start, note.end, note.lines, note.lang);
+        this.emitAnnotationChange(updated, annotationIndex);
 
         if (annotationIndex &&
-          (annotations[annotationIndex - 1].end > note.start)) {
-          annotations[annotationIndex - 1].end = note.start;
+          (annotations[annotationIndex - 1].end > annotations[annotationIndex].start)) {
+          annotations[annotationIndex - 1].end = annotations[annotationIndex].start;
 
-          this.playlist.ee.emit('annotationchange', annotations[annotationIndex - 1], annotationIndex - 1, this.annotations, {
-            linkEndpoints: this.playlist.linkEndpoints,
-          });
+          let note = annotations[annotationIndex - 1];
+          let updated = this.updateAnnotation(annotationIndex - 1, note.id, note.start, note.end, note.lines, note.lang);
+          this.emitAnnotationChange(updated, annotationIndex - 1);
         }
 
         if (this.playlist.linkEndpoints &&
           annotationIndex &&
           (annotations[annotationIndex - 1].end === originalVal)) {
-          annotations[annotationIndex - 1].end = note.start;
+          annotations[annotationIndex - 1].end = annotations[annotationIndex].start;
 
-          this.playlist.ee.emit('annotationchange', annotations[annotationIndex - 1], annotationIndex - 1, this.annotations, {
-            linkEndpoints: this.playlist.linkEndpoints,
-          });
+          let note = annotations[annotationIndex - 1];
+          let updated = this.updateAnnotation(annotationIndex - 1, note.id, note.start, note.end, note.lines, note.lang);
+          this.emitAnnotationChange(updated, annotationIndex - 1);
         }
       } else {
         // resizing to the right
@@ -90,27 +111,26 @@ class AnnotationList {
           note.end = this.playlist.duration;
         }
 
-        this.playlist.ee.emit('annotationchange', note, annotationIndex, this.annotations, {
-          linkEndpoints: this.playlist.linkEndpoints,
-        });
+        let updated = this.updateAnnotation(annotationIndex, note.id, note.start, note.end, note.lines, note.lang);
+        this.emitAnnotationChange(updated, annotationIndex);
 
         if (annotationIndex < (annotations.length - 1) &&
-          (annotations[annotationIndex + 1].start < note.end)) {
-          annotations[annotationIndex + 1].start = note.end;
+          (annotations[annotationIndex + 1].start < annotations[annotationIndex].end)) {
+          annotations[annotationIndex + 1].start = annotations[annotationIndex].end;
 
-          this.playlist.ee.emit('annotationchange', annotations[annotationIndex + 1], annotationIndex + 1, this.annotations, {
-            linkEndpoints: this.playlist.linkEndpoints,
-          });
+          let note = annotations[annotationIndex + 1];
+          let updated = this.updateAnnotation(annotationIndex + 1, note.id, note.start, note.end, note.lines, note.lang);
+          this.emitAnnotationChange(updated, annotationIndex + 1);
         }
 
         if (this.playlist.linkEndpoints &&
           (annotationIndex < (annotations.length - 1)) &&
           (annotations[annotationIndex + 1].start === originalVal)) {
-          annotations[annotationIndex + 1].start = note.end;
+          annotations[annotationIndex + 1].start = annotations[annotationIndex].end;
 
-          this.playlist.ee.emit('annotationchange', annotations[annotationIndex + 1], annotationIndex + 1, this.annotations, {
-            linkEndpoints: this.playlist.linkEndpoints,
-          });
+          let note = annotations[annotationIndex + 1];
+          let updated = this.updateAnnotation(annotationIndex + 1, note.id, note.start, note.end, note.lines, note.lang);
+          this.emitAnnotationChange(updated, annotationIndex + 1);
         }
       }
 
@@ -242,11 +262,6 @@ class AnnotationList {
         hook: new ScrollTopHook(),
       },
       this.annotations.map((note, i) => {
-        const format = timeformat(this.playlist.durationFormat);
-        const start = format(note.start);
-        const end = format(note.end);
-
-
         let segmentClass = '';
         if (this.playlist.isPlaying() &&
           (this.playlist.playbackSeconds >= note.start) &&
@@ -282,10 +297,10 @@ class AnnotationList {
               note.id,
             ]),
             h('span.annotation-start', [
-              start,
+              note.displayStart,
             ]),
             h('span.annotation-end', [
-              end,
+              note.displayEnd,
             ]),
             h('span.annotation-lines',
               linesConfig,
