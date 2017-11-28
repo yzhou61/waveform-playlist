@@ -29,6 +29,7 @@ export default class {
 
           if (cursorRect.right > rect.right) {
             playlist.scrollLeft = Math.min(playlist.playbackSeconds, MAX_SCROLL_LEFT);
+            playlist.ee.emit('scroll', playlist.scrollLeft);
           }
         }
       }

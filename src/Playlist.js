@@ -807,7 +807,9 @@ export default class {
 
   drawRequest() {
     window.requestAnimationFrame(() => {
+      console.time('drawing');
       this.draw(this.render());
+      console.timeEnd('drawing');
     });
   }
 
@@ -878,13 +880,17 @@ export default class {
           style: 'overflow: auto; position: relative;',
         },
         onscroll: (e) => {
+          const prev = this.scrollLeft;
+
           this.scrollLeft = pixelsToSeconds(
             e.target.scrollLeft,
             this.samplesPerPixel,
             this.sampleRate,
           );
 
-          this.ee.emit('scroll', this.scrollLeft);
+          if (prev !== this.scrollLeft) {
+            this.ee.emit('scroll', this.scrollLeft);
+          }
         },
         hook: new ScrollHook(this),
       },

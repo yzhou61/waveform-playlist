@@ -12,16 +12,13 @@
 
 import uuid from 'uuid';
 
-export default function (aeneas, options={}) {
-  const timeFormatter = options.timeFormatter;
+export default function (aeneas) {
   const annotation = {
     id: aeneas.id || uuid.v4(),
     start: Number(aeneas.begin) || 0,
     end: Number(aeneas.end) || 0,
     lines: aeneas.lines || [''],
-    lang: aeneas.language || 'en',
-    displayStart: timeFormatter(Number(aeneas.begin)),
-    displayEnd: timeFormatter(Number(aeneas.end)),
+    lang: aeneas.language || 'en'
   };
 
   return annotation;

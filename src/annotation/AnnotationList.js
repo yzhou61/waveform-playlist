@@ -14,10 +14,11 @@ class AnnotationList {
     this.resizeHandlers = [];
     this.editable = editable;
     this.timeFormatter = timeformat(this.playlist.durationFormat);
-    this.annotations = annotations.map(a =>
+    this.annotations = annotations.map((a) => {
       // TODO support different formats later on.
-      inputAeneas(a, {timeFormatter: this.timeFormatter}),
-    );
+      const note = inputAeneas(a);
+      return this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
+    });
     this.setupInteractions();
 
     this.controls = controls;
@@ -29,19 +30,25 @@ class AnnotationList {
     this.length = this.annotations.length;
   }
 
-  updateAnnotation(index, id, start, end, lines, lang) {
-    const note = {
+  updateAnnotation(id, start, end, lines, lang) {
+    const samplesPerPixel = this.playlist.samplesPerPixel;
+    const sampleRate = this.playlist.sampleRate;
+    const pixPerSec = sampleRate / samplesPerPixel;
+    const pixOffset = secondsToPixels(this.playlist.scrollLeft, samplesPerPixel, sampleRate);
+    const left = Math.floor((start * pixPerSec) - pixOffset);
+    const width = Math.ceil((end * pixPerSec) - (start * pixPerSec));
+
+    return {
       id,
       start,
       end,
       lines,
       lang,
+      left,
+      width,
       displayStart: this.timeFormatter(start),
       displayEnd: this.timeFormatter(end)
     }
-
-    this.annotations[index] = note;
-    return note;
   }
 
   setupInteractions() {
@@ -81,16 +88,16 @@ class AnnotationList {
           note.start = 0;
         }
 
-        let updated = this.updateAnnotation(annotationIndex, note.id, note.start, note.end, note.lines, note.lang);
-        this.emitAnnotationChange(updated, annotationIndex);
+        annotations[annotationIndex] = this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
+        this.emitAnnotationChange(annotations[annotationIndex], annotationIndex);
 
         if (annotationIndex &&
           (annotations[annotationIndex - 1].end > annotations[annotationIndex].start)) {
           annotations[annotationIndex - 1].end = annotations[annotationIndex].start;
 
           let note = annotations[annotationIndex - 1];
-          let updated = this.updateAnnotation(annotationIndex - 1, note.id, note.start, note.end, note.lines, note.lang);
-          this.emitAnnotationChange(updated, annotationIndex - 1);
+          annotations[annotationIndex - 1] = this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
+          this.emitAnnotationChange(annotations[annotationIndex - 1], annotationIndex - 1);
         }
 
         if (this.playlist.linkEndpoints &&
@@ -99,8 +106,8 @@ class AnnotationList {
           annotations[annotationIndex - 1].end = annotations[annotationIndex].start;
 
           let note = annotations[annotationIndex - 1];
-          let updated = this.updateAnnotation(annotationIndex - 1, note.id, note.start, note.end, note.lines, note.lang);
-          this.emitAnnotationChange(updated, annotationIndex - 1);
+          annotations[annotationIndex - 1] = this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
+          this.emitAnnotationChange(annotations[annotationIndex - 1], annotationIndex - 1);
         }
       } else {
         // resizing to the right
@@ -111,16 +118,16 @@ class AnnotationList {
           note.end = this.playlist.duration;
         }
 
-        let updated = this.updateAnnotation(annotationIndex, note.id, note.start, note.end, note.lines, note.lang);
-        this.emitAnnotationChange(updated, annotationIndex);
+        annotations[annotationIndex] = this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
+        this.emitAnnotationChange(annotations[annotationIndex], annotationIndex);
 
         if (annotationIndex < (annotations.length - 1) &&
           (annotations[annotationIndex + 1].start < annotations[annotationIndex].end)) {
           annotations[annotationIndex + 1].start = annotations[annotationIndex].end;
 
           let note = annotations[annotationIndex + 1];
-          let updated = this.updateAnnotation(annotationIndex + 1, note.id, note.start, note.end, note.lines, note.lang);
-          this.emitAnnotationChange(updated, annotationIndex + 1);
+          annotations[annotationIndex + 1] = this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
+          this.emitAnnotationChange(annotations[annotationIndex + 1], annotationIndex + 1);
         }
 
         if (this.playlist.linkEndpoints &&
@@ -129,8 +136,8 @@ class AnnotationList {
           annotations[annotationIndex + 1].start = annotations[annotationIndex].end;
 
           let note = annotations[annotationIndex + 1];
-          let updated = this.updateAnnotation(annotationIndex + 1, note.id, note.start, note.end, note.lines, note.lang);
-          this.emitAnnotationChange(updated, annotationIndex + 1);
+          annotations[annotationIndex + 1] = this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
+          this.emitAnnotationChange(annotations[annotationIndex + 1], annotationIndex + 1);
         }
       }
 
@@ -147,6 +154,13 @@ class AnnotationList {
 
     ee.on('annotationsrequest', () => {
       this.export();
+    });
+
+    ee.on('scroll', () => {
+      this.annotations = this.annotations.map((note) => {
+        return this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
+      });
+      this.playlist.drawRequest();
     });
 
     return ee;
@@ -172,9 +186,9 @@ class AnnotationList {
     } };
     const handler = this.resizeHandlers[i * 2];
 
-    events.forEach((event) => {
-      config[`on${event}`] = handler[event].bind(handler);
-    });
+    // events.forEach((event) => {
+    //   config[`on${event}`] = handler[event].bind(handler);
+    // });
 
     return h('div.resize-handle.resize-w', config);
   }
@@ -187,30 +201,11 @@ class AnnotationList {
     } };
     const handler = this.resizeHandlers[(i * 2) + 1];
 
-    events.forEach((event) => {
-      config[`on${event}`] = handler[event].bind(handler);
-    });
+    // events.forEach((event) => {
+    //   config[`on${event}`] = handler[event].bind(handler);
+    // });
 
     return h('div.resize-handle.resize-e', config);
-  }
-
-  renderControls(note, i) {
-    // seems to be a bug with references, or I'm missing something.
-    const that = this;
-    return this.controls.map(ctrl =>
-      h(`i.${ctrl.class}`, {
-        attributes: {
-          title: ctrl.title,
-        },
-        onclick: () => {
-          ctrl.action(note, i, that.annotations, {
-            linkEndpoints: that.playlist.linkEndpoints,
-          });
-          this.setupInteractions();
-          that.playlist.drawRequest();
-        },
-      }),
-    );
   }
 
   render() {
@@ -221,22 +216,22 @@ class AnnotationList {
         },
       },
       this.annotations.map((note, i) => {
-        const samplesPerPixel = this.playlist.samplesPerPixel;
-        const sampleRate = this.playlist.sampleRate;
-        const pixPerSec = sampleRate / samplesPerPixel;
-        const pixOffset = secondsToPixels(this.playlist.scrollLeft, samplesPerPixel, sampleRate);
-        const left = Math.floor((note.start * pixPerSec) - pixOffset);
-        const width = Math.ceil((note.end * pixPerSec) - (note.start * pixPerSec));
-
         return h('div.annotation-box',
           {
             attributes: {
-              style: `position: absolute; height: 30px; width: ${width}px; left: ${left}px`,
+              style: `position: absolute; height: 30px; width: ${note.width}px; left: ${note.left}px`,
               'data-id': note.id,
             },
           },
           [
-            this.renderResizeLeft(i),
+            h('div.resize-handle.resize-w',
+              {
+                attributes: {
+                  style: 'position: absolute; height: 30px; width: 10px; top: 0; left: -2px',
+                  draggable: true,
+                }
+              }
+            ),
             h('span.id',
               {
                 onclick: () => {
@@ -251,7 +246,14 @@ class AnnotationList {
                 note.id,
               ],
             ),
-            this.renderResizeRight(i),
+            h('div.resize-handle.resize-e',
+              {
+                attributes: {
+                  style: 'position: absolute; height: 30px; width: 10px; top: 0; right: -2px',
+                  draggable: true,
+                }
+              }
+            ),
           ],
         );
       }),
@@ -260,8 +262,21 @@ class AnnotationList {
     const text = h('div.annotations-text',
       {
         hook: new ScrollTopHook(),
+        onclick: (e) => {
+          const el = e.target;
+          if (el.classList.contains('anno-ctrl')) {
+            const annotationIndex = el.dataset.annotation;
+            const ctrl = el.dataset.ctrl;
+            this.controls[ctrl].action(this.annotations[annotationIndex], annotationIndex, this.annotations, {
+              linkEndpoints: this.playlist.linkEndpoints,
+            });
+            // TODO don't totally redo these.
+            this.setupInteractions();
+            this.playlist.drawRequest();
+          }
+        },
       },
-      this.annotations.map((note, i) => {
+      this.annotations.map((note, i, annotations) => {
         let segmentClass = '';
         if (this.playlist.isPlaying() &&
           (this.playlist.playbackSeconds >= note.start) &&
@@ -277,7 +292,7 @@ class AnnotationList {
             // needed currently for references
             // eslint-disable-next-line no-param-reassign
             note.lines = e.target.innerText.split('\n');
-            this.playlist.ee.emit('annotationchange', note, i, this.annotations, {
+            this.playlist.ee.emit('annotationchange', note, i, annotations, {
               linkEndpoints: this.playlist.linkEndpoints,
             });
           },
@@ -309,7 +324,23 @@ class AnnotationList {
               ],
             ),
             h('span.annotation-actions',
-              this.renderControls(note, i),
+              this.controls.map((ctrl, ctrlIndex) =>
+                h(`i.${ctrl.class}.anno-ctrl`, {
+                  attributes: {
+                    title: ctrl.title,
+                    'data-ctrl': ctrlIndex,
+                    'data-annotation': i,
+                  },
+                  // onclick: () => {
+                  //   ctrl.action(note, i, annotations, {
+                  //     linkEndpoints: this.playlist.linkEndpoints,
+                  //   });
+                  //   // TODO don't totally redo these.
+                  //   this.setupInteractions();
+                  //   this.playlist.drawRequest();
+                  // },
+                }),
+              ),
             ),
           ],
         );
