@@ -146,6 +146,14 @@ class AnnotationList {
       this.playlist.drawRequest();
     });
 
+    ee.on('durationformat', (format) => {
+      this.timeFormatter = timeformat(format);
+      this.playlist.annotations = this.playlist.annotations.map((note) => {
+        return this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
+      });
+      this.playlist.drawRequest();
+    });
+
     return ee;
   }
 
