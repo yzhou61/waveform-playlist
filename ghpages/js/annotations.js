@@ -195,17 +195,12 @@ var actions = [
     class: 'fa.fa-scissors',
     title: 'Split annotation in half',
     action: function (annotation, i, annotations) {
-      const halfDuration = (annotation.end - annotation.start) / 2;
+      var note = annotation;
+      var halfDuration = (annotation.end - annotation.start) / 2;
+      var newAnnotation = this.updateAnnotation('test', annotation.end - halfDuration, annotation.end, ['----'], 'en');
 
-      annotations.splice(i + 1, 0, {
-        id: 'test',
-        start: annotation.end - halfDuration,
-        end: annotation.end,
-        lines: ['----'],
-        lang: 'en',
-      });
-
-      annotation.end = annotation.start + halfDuration;
+      annotations[i] = this.updateAnnotation(note.id, note.start, note.start + halfDuration, note.lines, note.lang);
+      annotations.splice(i + 1, 0, newAnnotation);
 
       return annotations;
     }
