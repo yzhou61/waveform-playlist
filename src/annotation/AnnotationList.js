@@ -2,8 +2,7 @@ import h from 'virtual-dom/h';
 
 import inputAeneas from './input/aeneas';
 import outputAeneas from './output/aeneas';
-import { secondsToPixels } from '../utils/conversions';
-import DragInteraction from '../interaction/DragInteraction';
+import { secondsToPixels, pixelsToSeconds } from '../utils/conversions';
 import ScrollTopHook from './render/ScrollTopHook';
 import timeformat from '../utils/timeformat';
 
@@ -11,7 +10,6 @@ class AnnotationList {
   constructor(playlist, annotations, controls = [], editable = false,
     linkEndpoints = false, isContinuousPlay = false) {
     this.playlist = playlist;
-    this.resizeHandlers = [];
     this.editable = editable;
     this.timeFormatter = timeformat(this.playlist.durationFormat);
     this.playlist.annotations = annotations.map((a) => {
@@ -26,6 +24,10 @@ class AnnotationList {
     this.playlist.isContinuousPlay = isContinuousPlay;
     this.playlist.linkEndpoints = linkEndpoints;
     this.playlist.updateAnnotation = this.updateAnnotation.bind(this);
+
+    this.prevX = 0;
+    this.dragging = false;
+    document.addEventListener('dragover', this.ondragover.bind(this));
   }
 
   updateAnnotation(id, start, end, lines, lang) {
@@ -49,22 +51,6 @@ class AnnotationList {
     }
   }
 
-  setupInteractions() {
-    this.playlist.annotations.forEach((a, i) => {
-      const leftShift = new DragInteraction(this.playlist, {
-        direction: 'left',
-        index: i,
-      });
-      const rightShift = new DragInteraction(this.playlist, {
-        direction: 'right',
-        index: i,
-      });
-
-      this.resizeHandlers.push(leftShift);
-      this.resizeHandlers.push(rightShift);
-    });
-  }
-
   emitAnnotationChange(note, index) {
     this.playlist.ee.emit('annotationchange', note, index, this.playlist.annotations, {
       linkEndpoints: this.playlist.linkEndpoints,
@@ -72,13 +58,12 @@ class AnnotationList {
   }
 
   setupEE(ee) {
-    ee.on('dragged', (deltaTime, data) => {
-      const annotationIndex = data.index;
+    ee.on('dragged', (deltaTime, annotationIndex, direction) => {
       const annotations = this.playlist.annotations;
       let note = annotations[annotationIndex];
 
       // resizing to the left
-      if (data.direction === 'left') {
+      if (direction === 'left') {
         const originalVal = note.start;
         note.start += deltaTime;
 
@@ -176,34 +161,22 @@ class AnnotationList {
     document.body.removeChild(a);
   }
 
-  renderResizeLeft(i) {
-    const events = DragInteraction.getEvents();
-    const config = { attributes: {
-      style: 'position: absolute; height: 30px; width: 10px; top: 0; left: -2px',
-      draggable: true,
-    } };
-    const handler = this.resizeHandlers[i * 2];
+  ondragover(e) {
+    if (this.dragging) {
+      const x = e.clientX;
+      const deltaX = x - this.prevX;
 
-    // events.forEach((event) => {
-    //   config[`on${event}`] = handler[event].bind(handler);
-    // });
-
-    return h('div.resize-handle.resize-w', config);
-  }
-
-  renderResizeRight(i) {
-    const events = DragInteraction.getEvents();
-    const config = { attributes: {
-      style: 'position: absolute; height: 30px; width: 10px; top: 0; right: -2px',
-      draggable: true,
-    } };
-    const handler = this.resizeHandlers[(i * 2) + 1];
-
-    // events.forEach((event) => {
-    //   config[`on${event}`] = handler[event].bind(handler);
-    // });
-
-    return h('div.resize-handle.resize-e', config);
+      // emit shift event if not 0
+      if (deltaX) {
+        const deltaTime = pixelsToSeconds(
+          deltaX,
+          this.playlist.samplesPerPixel,
+          this.playlist.sampleRate,
+        );
+        this.prevX = x;
+        this.playlist.ee.emit('dragged', deltaTime, this.draggingIndex, this.draggingDirection);
+      }
+    }
   }
 
   render() {
@@ -221,6 +194,28 @@ class AnnotationList {
             } else {
               this.playlist.ee.emit('play', this.playlist.annotations[i].start, this.playlist.annotations[i].end);
             }
+          }
+        },
+        ondragstart: (e) => {
+          const el = e.target;
+          const index = parseInt(e.target.parentNode.dataset.index, 10);
+          const direction = e.target.dataset.direction;
+          if (el.classList.contains('resize-handle')) {
+            this.prevX = e.clientX;
+
+            e.dataTransfer.dropEffect = 'move';
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', '');
+            this.dragging = true;
+            this.draggingIndex = index;
+            this.draggingDirection = direction;
+          }
+        },
+        ondragend: (e) => {
+          const el = e.target;
+          if (el.classList.contains('resize-handle')) {
+            e.preventDefault();
+            this.dragging = false;
           }
         },
       },

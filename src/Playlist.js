@@ -810,9 +810,7 @@ export default class {
 
   drawRequest() {
     window.requestAnimationFrame(() => {
-      console.time('drawing');
       this.draw(this.render());
-      console.timeEnd('drawing');
     });
   }
 
