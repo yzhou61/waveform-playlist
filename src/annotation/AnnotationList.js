@@ -14,7 +14,7 @@ class AnnotationList {
     this.resizeHandlers = [];
     this.editable = editable;
     this.timeFormatter = timeformat(this.playlist.durationFormat);
-    this.annotations = annotations.map((a) => {
+    this.playlist.annotations = annotations.map((a) => {
       // TODO support different formats later on.
       const note = inputAeneas(a);
       return this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
@@ -27,7 +27,7 @@ class AnnotationList {
     // TODO actually make a real plugin system that's not terrible.
     this.playlist.isContinuousPlay = isContinuousPlay;
     this.playlist.linkEndpoints = linkEndpoints;
-    this.length = this.annotations.length;
+    this.playlist.updateAnnotation = this.updateAnnotation.bind(this);
   }
 
   updateAnnotation(id, start, end, lines, lang) {
@@ -52,7 +52,7 @@ class AnnotationList {
   }
 
   setupInteractions() {
-    this.annotations.forEach((a, i) => {
+    this.playlist.annotations.forEach((a, i) => {
       const leftShift = new DragInteraction(this.playlist, {
         direction: 'left',
         index: i,
@@ -68,7 +68,7 @@ class AnnotationList {
   }
 
   emitAnnotationChange(note, index) {
-    this.playlist.ee.emit('annotationchange', note, index, this.annotations, {
+    this.playlist.ee.emit('annotationchange', note, index, this.playlist.annotations, {
       linkEndpoints: this.playlist.linkEndpoints,
     });
   }
@@ -76,7 +76,7 @@ class AnnotationList {
   setupEE(ee) {
     ee.on('dragged', (deltaTime, data) => {
       const annotationIndex = data.index;
-      const annotations = this.annotations;
+      const annotations = this.playlist.annotations;
       let note = annotations[annotationIndex];
 
       // resizing to the left
@@ -157,7 +157,7 @@ class AnnotationList {
     });
 
     ee.on('scroll', () => {
-      this.annotations = this.annotations.map((note) => {
+      this.playlist.annotations = this.playlist.annotations.map((note) => {
         return this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
       });
       this.playlist.drawRequest();
@@ -167,7 +167,7 @@ class AnnotationList {
   }
 
   export() {
-    const output = this.annotations.map(a => outputAeneas(a));
+    const output = this.playlist.annotations.map(a => outputAeneas(a));
     const dataStr = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(output))}`;
     const a = document.createElement('a');
 
@@ -215,7 +215,7 @@ class AnnotationList {
           style: 'height: 30px; overflow: hidden; position: relative;',
         },
       },
-      this.annotations.map((note, i) => {
+      this.playlist.annotations.map((note, i) => {
         return h('div.annotation-box',
           {
             attributes: {
@@ -236,9 +236,9 @@ class AnnotationList {
               {
                 onclick: () => {
                   if (this.playlist.isContinuousPlay) {
-                    this.playlist.ee.emit('play', this.annotations[i].start);
+                    this.playlist.ee.emit('play', this.playlist.annotations[i].start);
                   } else {
-                    this.playlist.ee.emit('play', this.annotations[i].start, this.annotations[i].end);
+                    this.playlist.ee.emit('play', this.playlist.annotations[i].start, this.playlist.annotations[i].end);
                   }
                 },
               },
@@ -265,9 +265,10 @@ class AnnotationList {
         onclick: (e) => {
           const el = e.target;
           if (el.classList.contains('anno-ctrl')) {
-            const annotationIndex = el.dataset.annotation;
-            const ctrl = el.dataset.ctrl;
-            this.controls[ctrl].action(this.annotations[annotationIndex], annotationIndex, this.annotations, {
+            const annotationIndex = parseInt(el.dataset.annotation, 10);
+            const ctrl = parseInt(el.dataset.ctrl, 10);
+            const annotations = this.playlist.annotations;
+            this.controls[ctrl].action.call(this.playlist, annotations[annotationIndex], annotationIndex, annotations, {
               linkEndpoints: this.playlist.linkEndpoints,
             });
             // TODO don't totally redo these.
@@ -276,7 +277,7 @@ class AnnotationList {
           }
         },
       },
-      this.annotations.map((note, i, annotations) => {
+      this.playlist.annotations.map((note, i, annotations) => {
         let segmentClass = '';
         if (this.playlist.isPlaying() &&
           (this.playlist.playbackSeconds >= note.start) &&

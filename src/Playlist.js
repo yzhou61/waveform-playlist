@@ -34,6 +34,9 @@ export default class {
 
     this.fadeType = 'logarithmic';
     this.masterGain = 1;
+    this.annotations = [];
+
+    // TODO remove this.
     this.annotationList = [];
     this.durationFormat = 'hh:mm:ss.uuu';
     this.isAutomaticScroll = false;
@@ -907,7 +910,7 @@ export default class {
 
     containerChildren.push(this.renderTrackSection());
 
-    if (this.annotationList.length) {
+    if (this.annotations.length) {
       containerChildren.push(this.renderAnnotations());
     }
 

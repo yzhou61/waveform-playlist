@@ -156,35 +156,45 @@ var actions = [
   {
     class: 'fa.fa-minus',
     title: 'Reduce annotation end by 0.010s',
-    action: (annotation, i, annotations, opts) => {
+    action: function (annotation, i, annotations, opts) {
       var next;
       var delta = 0.010;
-      annotation.end -= delta;
+      var note = annotation;
 
+      annotations[i] = this.updateAnnotation(note.id, note.start, note.end - delta, note.lines, note.lang);
       if (opts.linkEndpoints) {
         next = annotations[i + 1];
-        next && (next.start -= delta);
+        if (next) {
+          annotations[i + 1] = this.updateAnnotation(next.id, next.start - delta, next.end, next.lines, next.lang);
+        }
       }
+
+      return annotations;
     }
   },
   {
     class: 'fa.fa-plus',
     title: 'Increase annotation end by 0.010s',
-    action: (annotation, i, annotations, opts) => {
+    action: function (annotation, i, annotations, opts) {
       var next;
       var delta = 0.010;
-      annotation.end += delta;
+      var note = annotation;
 
+      annotations[i] = this.updateAnnotation(note.id, note.start, note.end + delta, note.lines, note.lang);
       if (opts.linkEndpoints) {
         next = annotations[i + 1];
-        next && (next.start += delta);
+        if (next) {
+          annotations[i + 1] = this.updateAnnotation(next.id, next.start + delta, next.end, next.lines, next.lang);
+        }
       }
+
+      return annotations;
     }
   },
   {
     class: 'fa.fa-scissors',
     title: 'Split annotation in half',
-    action: (annotation, i, annotations) => {
+    action: function (annotation, i, annotations) {
       const halfDuration = (annotation.end - annotation.start) / 2;
 
       annotations.splice(i + 1, 0, {
@@ -196,13 +206,17 @@ var actions = [
       });
 
       annotation.end = annotation.start + halfDuration;
+
+      return annotations;
     }
   },
   {
     class: 'fa.fa-trash',
     title: 'Delete annotation',
-    action: (annotation, i, annotations) => {
+    action: function (annotation, i, annotations) {
       annotations.splice(i, 1);
+
+      return annotations;
     }
   }
 ];
