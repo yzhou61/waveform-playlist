@@ -19,8 +19,6 @@ class AnnotationList {
       const note = inputAeneas(a);
       return this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
     });
-    this.setupInteractions();
-
     this.controls = controls;
     this.setupEE(playlist.ee);
 
@@ -214,13 +212,24 @@ class AnnotationList {
         attributes: {
           style: 'height: 30px; overflow: hidden; position: relative;',
         },
+        onclick: (e) => {
+          const el = e.target;
+          if (el.classList.contains('id')) {
+            const i = parseInt(el.parentNode.dataset.index, 10);
+            if (this.playlist.isContinuousPlay) {
+              this.playlist.ee.emit('play', this.playlist.annotations[i].start);
+            } else {
+              this.playlist.ee.emit('play', this.playlist.annotations[i].start, this.playlist.annotations[i].end);
+            }
+          }
+        },
       },
       this.playlist.annotations.map((note, i) => {
         return h('div.annotation-box',
           {
             attributes: {
               style: `position: absolute; height: 30px; width: ${note.width}px; left: ${note.left}px`,
-              'data-id': note.id,
+              'data-index': i,
             },
           },
           [
@@ -229,19 +238,11 @@ class AnnotationList {
                 attributes: {
                   style: 'position: absolute; height: 30px; width: 10px; top: 0; left: -2px',
                   draggable: true,
+                  'data-direction': 'left',
                 }
               }
             ),
             h('span.id',
-              {
-                onclick: () => {
-                  if (this.playlist.isContinuousPlay) {
-                    this.playlist.ee.emit('play', this.playlist.annotations[i].start);
-                  } else {
-                    this.playlist.ee.emit('play', this.playlist.annotations[i].start, this.playlist.annotations[i].end);
-                  }
-                },
-              },
               [
                 note.id,
               ],
@@ -251,6 +252,7 @@ class AnnotationList {
                 attributes: {
                   style: 'position: absolute; height: 30px; width: 10px; top: 0; right: -2px',
                   draggable: true,
+                  'data-direction': 'right',
                 }
               }
             ),
@@ -271,8 +273,6 @@ class AnnotationList {
             this.controls[ctrl].action.call(this.playlist, annotations[annotationIndex], annotationIndex, annotations, {
               linkEndpoints: this.playlist.linkEndpoints,
             });
-            // TODO don't totally redo these.
-            this.setupInteractions();
             this.playlist.drawRequest();
           }
         },
