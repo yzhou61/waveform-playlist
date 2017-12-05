@@ -265,7 +265,7 @@ class AnnotationList {
         onclick: (e) => {
           const el = e.target;
           if (el.classList.contains('anno-ctrl')) {
-            const annotationIndex = parseInt(el.dataset.annotation, 10);
+            const annotationIndex = parseInt(el.parentNode.parentNode.dataset.index, 10);
             const ctrl = parseInt(el.dataset.ctrl, 10);
             const annotations = this.playlist.annotations;
             this.controls[ctrl].action.call(this.playlist, annotations[annotationIndex], annotationIndex, annotations, {
@@ -275,6 +275,24 @@ class AnnotationList {
             this.setupInteractions();
             this.playlist.drawRequest();
           }
+        },
+        onkeypress: (e) => {
+          if (e.which === 13 || e.keyCode === 13) {
+            e.target.blur();
+            e.preventDefault();
+          }
+        },
+        oninput: (e) => {
+          const el = e.target;
+          const annotationIndex = parseInt(el.parentNode.dataset.index, 10);
+          const annotations = this.playlist.annotations;
+          const note = annotations[annotationIndex];
+          const lines = e.target.innerText.split('\n');
+
+          annotations[annotationIndex] = this.updateAnnotation(note.id, note.start, note.end, lines, note.lang);
+          this.playlist.ee.emit('annotationchange', annotations[annotationIndex], annotationIndex, annotations, {
+            linkEndpoints: this.playlist.linkEndpoints,
+          });
         },
       },
       this.playlist.annotations.map((note, i, annotations) => {
@@ -289,25 +307,16 @@ class AnnotationList {
           attributes: {
             contenteditable: true,
           },
-          oninput: (e) => {
-            // needed currently for references
-            // eslint-disable-next-line no-param-reassign
-            note.lines = e.target.innerText.split('\n');
-            this.playlist.ee.emit('annotationchange', note, i, annotations, {
-              linkEndpoints: this.playlist.linkEndpoints,
-            });
-          },
-          onkeypress: (e) => {
-            if (e.which === 13 || e.keyCode === 13) {
-              e.target.blur();
-              e.preventDefault();
-            }
-          },
         };
 
         const linesConfig = this.editable ? editableConfig : {};
 
         return h(`div.annotation${segmentClass}`,
+          {
+            attributes: {
+              'data-index': i,
+            },
+          },
           [
             h('span.annotation-id', [
               note.id,
@@ -330,16 +339,7 @@ class AnnotationList {
                   attributes: {
                     title: ctrl.title,
                     'data-ctrl': ctrlIndex,
-                    'data-annotation': i,
                   },
-                  // onclick: () => {
-                  //   ctrl.action(note, i, annotations, {
-                  //     linkEndpoints: this.playlist.linkEndpoints,
-                  //   });
-                  //   // TODO don't totally redo these.
-                  //   this.setupInteractions();
-                  //   this.playlist.drawRequest();
-                  // },
                 }),
               ),
             ),
