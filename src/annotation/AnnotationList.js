@@ -234,7 +234,7 @@ class AnnotationList {
       h('div.annotations-boxes-container',
         {
           attributes: {
-            style: `position: absolute; width: 100%; height: 100%; transform: translate(${pixOffset}px, 0px);`,
+            style: `position: absolute; width: 100%; height: 100%; transform: translate(${pixOffset}px, 0);`,
           },
         },
         this.playlist.annotations.map((note, i) => {

@@ -410,7 +410,7 @@ export default class {
     const waveformChildren = [
       h('div.cursor', {
         attributes: {
-          style: `position: absolute; width: 1px; margin: 0; padding: 0; top: 0; left: ${playbackX}px; bottom: 0; z-index: 5;`,
+          style: `position: absolute; width: 1px; margin: 0; padding: 0; top: 0; transform: translate(${playbackX}px, 0); bottom: 0; z-index: 5;`,
         },
       }),
     ];
@@ -419,7 +419,7 @@ export default class {
       const channelChildren = [
         h('div.channel-progress', {
           attributes: {
-            style: `position: absolute; width: ${progressWidth}px; height: ${data.height}px; z-index: 2;`,
+            style: `position: absolute; width: ${width}px; transform: translate(${progressWidth - width}px, 0); height: ${data.height}px; z-index: 2;`,
           },
         }),
       ];
