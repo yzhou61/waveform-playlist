@@ -334,11 +334,13 @@ class AnnotationList {
             h('span.annotation-id', [
               note.id,
             ]),
-            h('span.annotation-start', [
-              note.displayStart,
-            ]),
-            h('span.annotation-end', [
-              note.displayEnd,
+            h('span.annotation-times', [
+              h('span.annotation-start', [
+                note.displayStart,
+              ]),
+              h('span.annotation-end', [
+                note.displayEnd,
+              ]),
             ]),
             h('span.annotation-lines',
               linesConfig,
