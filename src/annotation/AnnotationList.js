@@ -279,18 +279,18 @@ class AnnotationList {
             this.playlist.drawRequest();
           }
         },
-        onkeypress: (e) => {
-          if (e.which === 13 || e.keyCode === 13) {
-            e.target.blur();
-            e.preventDefault();
-          }
-        },
+        // onkeypress: (e) => {
+        //   if (e.which === 13 || e.keyCode === 13) {
+        //     e.target.blur();
+        //     e.preventDefault();
+        //   }
+        // },
         oninput: (e) => {
           const el = e.target;
           const annotationIndex = parseInt(el.parentNode.dataset.index, 10);
           const annotations = this.playlist.annotations;
           const note = annotations[annotationIndex];
-          const lines = e.target.innerText.split('\n');
+          const lines = e.target.innerText.trim().split('\n');
 
           annotations[annotationIndex] = this.updateAnnotation(note.id, note.start, note.end, lines, note.lang);
           this.playlist.ee.emit('annotationchange', annotations[annotationIndex], annotationIndex, annotations, {
@@ -332,9 +332,8 @@ class AnnotationList {
             ]),
             h('span.annotation-lines',
               linesConfig,
-              [
-                note.lines.join('\n'),
-              ],
+              // TODO check with newline <div> problems.
+              note.lines.join('\n'),
             ),
             h('span.annotation-actions',
               this.controls.map((ctrl, ctrlIndex) =>

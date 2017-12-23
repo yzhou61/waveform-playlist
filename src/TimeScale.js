@@ -91,35 +91,31 @@ class TimeScale {
   render() {
     const widthX = secondsToPixels(this.duration, this.samplesPerPixel, this.sampleRate);
     const pixPerSec = this.sampleRate / this.samplesPerPixel;
-    const pixOffset = secondsToPixels(this.offset, this.samplesPerPixel, this.sampleRate);
+    const pixOffset = secondsToPixels(this.offset, this.samplesPerPixel, this.sampleRate) * -1;
     const scaleInfo = this.getScaleInfo(this.samplesPerPixel);
     const canvasInfo = {};
     const timeMarkers = [];
-    const end = widthX + pixOffset;
     let counter = 0;
 
-    for (let i = 0; i < end; i += (pixPerSec * scaleInfo.secondStep)) {
-      const pixIndex = Math.floor(i);
-      const pix = pixIndex - pixOffset;
+    for (let i = 0; i < widthX; i += (pixPerSec * scaleInfo.secondStep)) {
+      const pix = Math.floor(i);
 
-      if (pixIndex >= pixOffset) {
-        // put a timestamp every 30 seconds.
-        if (scaleInfo.marker && (counter % scaleInfo.marker === 0)) {
-          timeMarkers.push(h('div.time',
-            {
-              attributes: {
-                style: `position: absolute; left: ${pix}px;`,
-              },
+      // put a timestamp every 30 seconds.
+      if (scaleInfo.marker && (counter % scaleInfo.marker === 0)) {
+        timeMarkers.push(h('div.time',
+          {
+            attributes: {
+              style: `position: absolute; left: ${pix}px;`,
             },
-            [TimeScale.formatTime(counter)],
-          ));
+          },
+          [TimeScale.formatTime(counter)],
+        ));
 
-          canvasInfo[pix] = 10;
-        } else if (scaleInfo.bigStep && (counter % scaleInfo.bigStep === 0)) {
-          canvasInfo[pix] = 5;
-        } else if (scaleInfo.smallStep && (counter % scaleInfo.smallStep === 0)) {
-          canvasInfo[pix] = 2;
-        }
+        canvasInfo[pix] = 10;
+      } else if (scaleInfo.bigStep && (counter % scaleInfo.bigStep === 0)) {
+        canvasInfo[pix] = 5;
+      } else if (scaleInfo.smallStep && (counter % scaleInfo.smallStep === 0)) {
+        canvasInfo[pix] = 2;
       }
 
       counter += (1000 * scaleInfo.secondStep);
@@ -131,19 +127,26 @@ class TimeScale {
           style: `overflow: hidden; position: relative; left: 0; right: 0; margin-left: ${this.marginLeft}px;`,
         },
       },
-      [
-        timeMarkers,
-        h('canvas',
-          {
-            attributes: {
-              width: widthX,
-              height: 10,
-              style: 'position: absolute; left: 0; right: 0; bottom: 0;',
-            },
-            hook: new TimeScaleHook(canvasInfo, this.offset, this.samplesPerPixel, this.duration, this.color),
+      h('div.playlist-time-scale-scroll',
+        {
+          attributes: {
+            style: `position: absolute; width: 100%; height: 100%; left: ${pixOffset}px;`,
           },
-        ),
-      ],
+        },
+        [
+          timeMarkers,
+          h('canvas',
+            {
+              attributes: {
+                width: widthX,
+                height: 10,
+                style: 'position: absolute; left: 0; right: 0; bottom: 0;',
+              },
+              hook: new TimeScaleHook(canvasInfo, this.offset, this.samplesPerPixel, this.duration, this.color),
+            },
+          ),
+        ],
+      ),
     );
   }
 }

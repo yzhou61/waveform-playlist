@@ -13,7 +13,6 @@ export default class {
   hook(canvas, prop, prev) {
     // canvas is up to date
     if (prev !== undefined
-      && (prev.offset === this.offset)
       && (prev.duration === this.duration)
       && (prev.samplesPerPixel === this.samplesPerPixel)) {
       return;
