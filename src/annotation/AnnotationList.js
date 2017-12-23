@@ -34,8 +34,7 @@ class AnnotationList {
     const samplesPerPixel = this.playlist.samplesPerPixel;
     const sampleRate = this.playlist.sampleRate;
     const pixPerSec = sampleRate / samplesPerPixel;
-    const pixOffset = secondsToPixels(this.playlist.scrollLeft, samplesPerPixel, sampleRate);
-    const left = Math.floor((start * pixPerSec) - pixOffset);
+    const left = Math.floor(start * pixPerSec);
     const width = Math.ceil((end * pixPerSec) - (start * pixPerSec));
 
     return {
@@ -188,6 +187,10 @@ class AnnotationList {
   }
 
   render() {
+    const samplesPerPixel = this.playlist.samplesPerPixel;
+    const sampleRate = this.playlist.sampleRate;
+    const pixOffset = secondsToPixels(this.playlist.scrollLeft, samplesPerPixel, sampleRate) * -1;
+
     const boxes = h('div.annotations-boxes',
       {
         attributes: {
@@ -227,41 +230,48 @@ class AnnotationList {
           }
         },
       },
-      this.playlist.annotations.map((note, i) => {
-        return h('div.annotation-box',
-          {
-            attributes: {
-              style: `position: absolute; height: 30px; width: ${note.width}px; left: ${note.left}px`,
-              'data-index': i,
-            },
+      h('div.annotations-boxes-container',
+        {
+          attributes: {
+            style: `position: absolute; width: 100%; height: 100%; left: ${pixOffset}px;`,
           },
-          [
-            h('div.resize-handle.resize-w',
-              {
-                attributes: {
-                  style: 'position: absolute; height: 30px; width: 10px; top: 0; left: -2px',
-                  draggable: true,
-                  'data-direction': 'left',
+        },
+        this.playlist.annotations.map((note, i) => {
+          return h('div.annotation-box',
+            {
+              attributes: {
+                style: `position: absolute; height: 30px; width: ${note.width}px; left: ${note.left}px`,
+                'data-index': i,
+              },
+            },
+            [
+              h('div.resize-handle.resize-w',
+                {
+                  attributes: {
+                    style: 'position: absolute; height: 30px; width: 10px; top: 0; left: -2px',
+                    draggable: true,
+                    'data-direction': 'left',
+                  }
                 }
-              }
-            ),
-            h('span.id',
-              [
-                note.id,
-              ],
-            ),
-            h('div.resize-handle.resize-e',
-              {
-                attributes: {
-                  style: 'position: absolute; height: 30px; width: 10px; top: 0; right: -2px',
-                  draggable: true,
-                  'data-direction': 'right',
+              ),
+              h('span.id',
+                [
+                  note.id,
+                ],
+              ),
+              h('div.resize-handle.resize-e',
+                {
+                  attributes: {
+                    style: 'position: absolute; height: 30px; width: 10px; top: 0; right: -2px',
+                    draggable: true,
+                    'data-direction': 'right',
+                  }
                 }
-              }
-            ),
-          ],
-        );
-      }),
+              ),
+            ],
+          );
+        }),
+      ),
     );
 
     const text = h('div.annotations-text',
