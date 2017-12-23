@@ -4,6 +4,7 @@ import inputAeneas from './input/aeneas';
 import outputAeneas from './output/aeneas';
 import { secondsToPixels, pixelsToSeconds } from '../utils/conversions';
 import ScrollTopHook from './render/ScrollTopHook';
+import ContentEditableHook from './render/ContentEditableHook';
 import timeformat from '../utils/timeformat';
 
 class AnnotationList {
@@ -316,14 +317,6 @@ class AnnotationList {
           segmentClass = '.current';
         }
 
-        const editableConfig = {
-          attributes: {
-            contenteditable: true,
-          },
-        };
-
-        const linesConfig = this.editable ? editableConfig : {};
-
         return h(`div.annotation${segmentClass}`,
           {
             attributes: {
@@ -343,9 +336,12 @@ class AnnotationList {
               ]),
             ]),
             h('span.annotation-lines',
-              linesConfig,
-              // TODO check with newline <div> problems.
-              note.lines.join('\n'),
+              {
+                attributes: {
+                  contenteditable: this.editable ? true : false,
+                },
+                hook: new ContentEditableHook(note.lines.join('\n')),
+              },
             ),
             h('span.annotation-actions',
               this.controls.map((ctrl, ctrlIndex) =>
