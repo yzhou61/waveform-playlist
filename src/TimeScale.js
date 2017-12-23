@@ -130,7 +130,7 @@ class TimeScale {
       h('div.playlist-time-scale-scroll',
         {
           attributes: {
-            style: `position: absolute; width: 100%; height: 100%; left: ${pixOffset}px;`,
+            style: `position: absolute; width: 100%; height: 100%; transform: translate(${pixOffset}px, 0px);`,
           },
         },
         [
