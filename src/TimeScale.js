@@ -1,4 +1,5 @@
 import h from 'virtual-dom/h';
+import Thunk from 'vdom-thunk';
 
 import { secondsToPixels } from './utils/conversions';
 import TimeScaleHook from './render/TimeScaleHook';
@@ -56,6 +57,8 @@ class TimeScale {
         secondStep: 1 / 10,
       },
     };
+
+    this.timescale = this.timescale.bind(this);
   }
 
   getScaleInfo(resolution) {
@@ -88,7 +91,9 @@ class TimeScale {
     return `${m}:${s}`;
   }
 
-  render() {
+  // TODO calculate this render only on duration change or zoom level change
+  timescale() {
+    console.log('HELLO')
     const widthX = secondsToPixels(this.duration, this.samplesPerPixel, this.sampleRate);
     const pixPerSec = this.sampleRate / this.samplesPerPixel;
     const pixOffset = secondsToPixels(this.offset, this.samplesPerPixel, this.sampleRate) * -1;
@@ -148,6 +153,11 @@ class TimeScale {
         ],
       ),
     );
+  }
+
+  render() {
+    console.log(this.duration);
+    return Thunk(this.timescale, this.duration);
   }
 }
 

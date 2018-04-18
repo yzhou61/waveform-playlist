@@ -28,7 +28,16 @@ class AnnotationList {
 
     this.prevX = 0;
     this.dragging = false;
-    document.addEventListener('dragover', this.ondragover.bind(this));
+
+    this.onAnnotationBoxClick = this.onAnnotationBoxClick.bind(this);
+    this.onAnnotationBoxDragStart = this.onAnnotationBoxDragStart.bind(this);
+    this.onAnnotationBoxDragEnd = this.onAnnotationBoxDragEnd.bind(this);
+    this.onAnnotationTextClick = this.onAnnotationTextClick.bind(this);
+    this.onAnnotationTextInput = this.onAnnotationTextInput.bind(this);
+    this.ondragover = this.ondragover.bind(this);
+
+    // TODO remove this event.
+    document.addEventListener('dragover', this.ondragover);
   }
 
   updateAnnotation(id, start, end, lines, lang) {
@@ -187,6 +196,68 @@ class AnnotationList {
     }
   }
 
+  onAnnotationBoxClick(e) {
+    const el = e.target;
+    if (el.classList.contains('id')) {
+      const i = parseInt(el.parentNode.dataset.index, 10);
+      if (this.playlist.isContinuousPlay) {
+        this.playlist.ee.emit('play', this.playlist.annotations[i].start);
+      } else {
+        this.playlist.ee.emit('play', this.playlist.annotations[i].start, this.playlist.annotations[i].end);
+      }
+    }
+  }
+
+  onAnnotationBoxDragStart(e) {
+    const el = e.target;
+    const index = parseInt(e.target.parentNode.dataset.index, 10);
+    const direction = e.target.dataset.direction;
+    if (el.classList.contains('resize-handle')) {
+      this.prevX = e.clientX;
+
+      e.dataTransfer.dropEffect = 'move';
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', '');
+      this.dragging = true;
+      this.draggingIndex = index;
+      this.draggingDirection = direction;
+    }
+  }
+
+  onAnnotationBoxDragEnd(e) {
+    const el = e.target;
+    if (el.classList.contains('resize-handle')) {
+      e.preventDefault();
+      this.dragging = false;
+    }
+  }
+
+  onAnnotationTextClick(e) {
+    const el = e.target;
+    if (el.classList.contains('anno-ctrl')) {
+      const annotationIndex = parseInt(el.parentNode.parentNode.dataset.index, 10);
+      const ctrl = parseInt(el.dataset.ctrl, 10);
+      const annotations = this.playlist.annotations;
+      this.controls[ctrl].action.call(this.playlist, annotations[annotationIndex], annotationIndex, annotations, {
+        linkEndpoints: this.playlist.linkEndpoints,
+      });
+      this.playlist.drawRequest();
+    }
+  }
+
+  onAnnotationTextInput(e) {
+    const el = e.target;
+    const annotationIndex = parseInt(el.parentNode.dataset.index, 10);
+    const annotations = this.playlist.annotations;
+    const note = annotations[annotationIndex];
+    const lines = e.target.innerText.trim().split('\n');
+
+    annotations[annotationIndex] = this.updateAnnotation(note.id, note.start, note.end, lines, note.lang);
+    this.playlist.ee.emit('annotationchange', annotations[annotationIndex], annotationIndex, annotations, {
+      linkEndpoints: this.playlist.linkEndpoints,
+    });
+  }
+
   render() {
     const samplesPerPixel = this.playlist.samplesPerPixel;
     const sampleRate = this.playlist.sampleRate;
@@ -197,39 +268,9 @@ class AnnotationList {
         attributes: {
           style: 'height: 30px; overflow: hidden; position: relative;',
         },
-        onclick: (e) => {
-          const el = e.target;
-          if (el.classList.contains('id')) {
-            const i = parseInt(el.parentNode.dataset.index, 10);
-            if (this.playlist.isContinuousPlay) {
-              this.playlist.ee.emit('play', this.playlist.annotations[i].start);
-            } else {
-              this.playlist.ee.emit('play', this.playlist.annotations[i].start, this.playlist.annotations[i].end);
-            }
-          }
-        },
-        ondragstart: (e) => {
-          const el = e.target;
-          const index = parseInt(e.target.parentNode.dataset.index, 10);
-          const direction = e.target.dataset.direction;
-          if (el.classList.contains('resize-handle')) {
-            this.prevX = e.clientX;
-
-            e.dataTransfer.dropEffect = 'move';
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', '');
-            this.dragging = true;
-            this.draggingIndex = index;
-            this.draggingDirection = direction;
-          }
-        },
-        ondragend: (e) => {
-          const el = e.target;
-          if (el.classList.contains('resize-handle')) {
-            e.preventDefault();
-            this.dragging = false;
-          }
-        },
+        onclick: this.onAnnotationBoxClick,
+        ondragstart: this.onAnnotationBoxDragStart,
+        ondragend: this.onAnnotationBoxDragEnd,
       },
       h('div.annotations-boxes-container',
         {
@@ -275,39 +316,12 @@ class AnnotationList {
       ),
     );
 
+    // TODO fix function reference.
     const text = h('div.annotations-text',
       {
         hook: new ScrollTopHook(),
-        onclick: (e) => {
-          const el = e.target;
-          if (el.classList.contains('anno-ctrl')) {
-            const annotationIndex = parseInt(el.parentNode.parentNode.dataset.index, 10);
-            const ctrl = parseInt(el.dataset.ctrl, 10);
-            const annotations = this.playlist.annotations;
-            this.controls[ctrl].action.call(this.playlist, annotations[annotationIndex], annotationIndex, annotations, {
-              linkEndpoints: this.playlist.linkEndpoints,
-            });
-            this.playlist.drawRequest();
-          }
-        },
-        // onkeypress: (e) => {
-        //   if (e.which === 13 || e.keyCode === 13) {
-        //     e.target.blur();
-        //     e.preventDefault();
-        //   }
-        // },
-        oninput: (e) => {
-          const el = e.target;
-          const annotationIndex = parseInt(el.parentNode.dataset.index, 10);
-          const annotations = this.playlist.annotations;
-          const note = annotations[annotationIndex];
-          const lines = e.target.innerText.trim().split('\n');
-
-          annotations[annotationIndex] = this.updateAnnotation(note.id, note.start, note.end, lines, note.lang);
-          this.playlist.ee.emit('annotationchange', annotations[annotationIndex], annotationIndex, annotations, {
-            linkEndpoints: this.playlist.linkEndpoints,
-          });
-        },
+        onclick: this.onAnnotationTextClick,
+        oninput: this.onAnnotationTextInput,
       },
       this.playlist.annotations.map((note, i, annotations) => {
         let segmentClass = '';
