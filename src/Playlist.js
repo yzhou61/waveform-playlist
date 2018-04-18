@@ -859,13 +859,22 @@ export default class {
 
   renderTimeScale() {
     const controlWidth = this.controls.show ? this.controls.width : 0;
-    const timeScale = new TimeScale(this.duration, this.scrollLeft,
-      this.samplesPerPixel, this.sampleRate, controlWidth, this.colors.timeColor);
 
-    return timeScale.render();
+    return TimeScale({
+      duration: this.duration,
+      samplesPerPixel: this.samplesPerPixel,
+      sampleRate: this.sampleRate,
+      color: this.colors.timeColor,
+      controlWidth,
+    });
   }
 
   renderTrackSection() {
+    const timescale = [];
+    if (this.showTimescale) {
+      timescale.push(this.renderTimeScale());
+    }
+
     const trackElements = this.tracks.map(track =>
       track.render(this.getTrackRenderData({
         isActive: this.isActiveTrack(track),
@@ -874,6 +883,8 @@ export default class {
         muted: this.mutedTracks.indexOf(track) > -1,
       })),
     );
+
+    const children = timescale.concat(trackElements);
 
     return h('div.playlist-tracks',
       {
@@ -895,16 +906,12 @@ export default class {
         },
         hook: new ScrollHook(this),
       },
-      trackElements,
+      children,
     );
   }
 
   render() {
     const containerChildren = [];
-
-    if (this.showTimescale) {
-      containerChildren.push(this.renderTimeScale());
-    }
 
     containerChildren.push(this.renderTrackSection());
 
