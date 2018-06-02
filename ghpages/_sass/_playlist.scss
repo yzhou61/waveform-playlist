@@ -15,11 +15,13 @@
 
   .channel-progress {
     background: orange;
+    transform: translateZ(0);
     will-change: transform;
   }
 
   .cursor {
     background: black;
+    transform: translateZ(0);
     will-change: transform;
   }
 

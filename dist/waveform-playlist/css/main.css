@@ -8,9 +8,11 @@
     background: grey; }
   .playlist .channel-progress {
     background: orange;
+    transform: translateZ(0);
     will-change: transform; }
   .playlist .cursor {
     background: black;
+    transform: translateZ(0);
     will-change: transform; }
   .playlist .wp-fade {
     background-color: rgba(0, 0, 0, 0.1); }

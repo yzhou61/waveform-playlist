@@ -333,7 +333,6 @@ class AnnotationList {
   }
 
   renderList() {
-    // TODO fix function reference.
     return h('div.annotations-text',
       {
         hook: new ScrollTopHook(),

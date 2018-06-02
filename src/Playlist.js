@@ -777,18 +777,18 @@ export default class {
     const elapsed = currentTime - this.lastDraw;
 
     if (this.isPlaying()) {
-      const playbackSeconds = cursorPos + elapsed;
-      this.ee.emit('timeupdate', playbackSeconds);
-      this.playbackSeconds = playbackSeconds;
-      this.draw(this.render());
-      this.lastDraw = currentTime;
-
       this.animationRequest = window.requestAnimationFrame((frameStart) => {
         if (frameStart > this.lastFrame) {
           this.updateEditor(playbackSeconds);
           this.lastFrame = frameStart;
         }
       });
+
+      const playbackSeconds = cursorPos + elapsed;
+      this.ee.emit('timeupdate', playbackSeconds);
+      this.playbackSeconds = playbackSeconds;
+      this.draw(this.render());
+      this.lastDraw = currentTime;
     } else {
       if ((cursorPos + elapsed) >=
         (this.isSegmentSelection() ? selection.end : this.duration)) {
@@ -892,39 +892,42 @@ export default class {
 
   render() {
     const trackChildren = this.renderTrackSection();
-    const [boxes, list] = this.renderAnnotations();
-
-    trackChildren.push(boxes);
-
-    return h('div.playlist',
-      [
-        h('div.playlist-tracks',
-          {
-            attributes: {
-              style: 'overflow: auto; position: relative;',
-            },
-            onscroll: (e) => {
-              this.isScrolling = true;
-              clearTimeout(this.scrollTimer);
-
-              this.scrollTimer = setTimeout(() => {
-                this.isScrolling = false;
-
-                this.scrollLeft = pixelsToSeconds(
-                  e.target.scrollLeft,
-                  this.samplesPerPixel,
-                  this.sampleRate,
-                );
-
-                this.ee.emit('scroll', this.scrollLeft);
-              }, 200);
-            },
-            hook: new ScrollHook(this),
+    const playlistChildren = [
+      h('div.playlist-tracks',
+        {
+          attributes: {
+            style: 'overflow: auto; position: relative;',
           },
-          trackChildren,
-        ),
-        list,
-      ],
+          onscroll: (e) => {
+            this.isScrolling = true;
+            clearTimeout(this.scrollTimer);
+
+            this.scrollTimer = setTimeout(() => {
+              this.isScrolling = false;
+
+              this.scrollLeft = pixelsToSeconds(
+                e.target.scrollLeft,
+                this.samplesPerPixel,
+                this.sampleRate,
+              );
+
+              this.ee.emit('scroll', this.scrollLeft);
+            }, 200);
+          },
+          hook: new ScrollHook(this),
+        },
+        trackChildren,
+      ),
+    ];
+
+    if (this.annotations.length) {
+      const [boxes, list] = this.renderAnnotations();
+      trackChildren.push(boxes);
+      playlistChildren.push(list);
+    }
+    
+    return h('div.playlist',
+      playlistChildren,
     );
   }
 
