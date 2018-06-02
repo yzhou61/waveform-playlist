@@ -891,7 +891,13 @@ export default class {
   }
 
   render() {
+    const [boxes, list] = this.renderAnnotations();
     const trackChildren = this.renderTrackSection();
+
+    if (this.annotations.length) {
+      trackChildren.push(boxes);
+    }
+
     const playlistChildren = [
       h('div.playlist-tracks',
         {
@@ -921,8 +927,6 @@ export default class {
     ];
 
     if (this.annotations.length) {
-      const [boxes, list] = this.renderAnnotations();
-      trackChildren.push(boxes);
       playlistChildren.push(list);
     }
     
