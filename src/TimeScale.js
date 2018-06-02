@@ -81,10 +81,6 @@ function formatTime(milliseconds) {
 function timescale(state) {
   const {duration, samplesPerPixel, sampleRate, controlWidth, color} = state;
 
-  console.log('HELLO');
-  console.log(duration);
-  console.log(samplesPerPixel);
-
   const widthX = secondsToPixels(duration, samplesPerPixel, sampleRate);
   const pixPerSec = sampleRate / samplesPerPixel;
   const scaleInfo = getScaleInfo(samplesPerPixel);

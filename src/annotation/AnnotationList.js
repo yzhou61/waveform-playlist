@@ -49,8 +49,6 @@ class AnnotationList {
   }
 
   updateAnnotation(id, start, end, lines, lang) {
-    console.log(`update annotation ${id}`);
-
     const samplesPerPixel = this.playlist.samplesPerPixel;
     const sampleRate = this.playlist.sampleRate;
     const pixPerSec = sampleRate / samplesPerPixel;
@@ -280,8 +278,6 @@ class AnnotationList {
   }
 
   renderBoxes() {
-    console.log('RENDERING BOXES');
-
     return h('div.annotations-boxes',
       {
         attributes: {
@@ -337,8 +333,6 @@ class AnnotationList {
   }
 
   renderList() {
-    console.log('RENDERING LIST');
-
     // TODO fix function reference.
     return h('div.annotations-text',
       {

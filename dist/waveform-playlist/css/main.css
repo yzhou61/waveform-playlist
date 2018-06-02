@@ -7,9 +7,11 @@
   .playlist .channel {
     background: grey; }
   .playlist .channel-progress {
-    background: orange; }
+    background: orange;
+    will-change: transform; }
   .playlist .cursor {
-    background: black; }
+    background: black;
+    will-change: transform; }
   .playlist .wp-fade {
     background-color: rgba(0, 0, 0, 0.1); }
   .playlist .state-cursor,
@@ -172,6 +174,11 @@
     content: "Drop audio file(s) here!"; }
   .track-drop.drag-enter {
     border: 2px solid orange; }
+
+.audio-pos {
+  font-weight: bold;
+  transform: translateZ(0);
+  display: none; }
 
 footer {
   margin-top: 2em; }

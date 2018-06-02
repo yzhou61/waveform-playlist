@@ -41,6 +41,9 @@ export default class {
     this.durationFormat = 'hh:mm:ss.uuu';
     this.isAutomaticScroll = false;
     this.resetDrawTimer = undefined;
+
+    this.lastDraw = 0;
+    this.lastFrame = 0;
   }
 
   // TODO extract into a plugin
@@ -311,15 +314,6 @@ export default class {
         this.setZoom(zoom);
         this.drawRequest();
       }
-    });
-
-    ee.on('scroll', () => {
-      this.isScrolling = true;
-      this.drawRequest();
-      clearTimeout(this.scrollTimer);
-      this.scrollTimer = setTimeout(() => {
-        this.isScrolling = false;
-      }, 200);
     });
   }
 
@@ -743,8 +737,11 @@ export default class {
 
   startAnimation(startTime) {
     this.lastDraw = this.ac.currentTime;
-    this.animationRequest = window.requestAnimationFrame(() => {
-      this.updateEditor(startTime);
+    this.animationRequest = window.requestAnimationFrame((frameStart) => {
+      if (frameStart > this.lastFrame) {
+        this.updateEditor(startTime);
+        this.lastFrame = frameStart;
+      }
     });
   }
 
@@ -782,13 +779,16 @@ export default class {
     if (this.isPlaying()) {
       const playbackSeconds = cursorPos + elapsed;
       this.ee.emit('timeupdate', playbackSeconds);
-      this.animationRequest = window.requestAnimationFrame(() => {
-        this.updateEditor(playbackSeconds);
-      });
-
       this.playbackSeconds = playbackSeconds;
       this.draw(this.render());
       this.lastDraw = currentTime;
+
+      this.animationRequest = window.requestAnimationFrame((frameStart) => {
+        if (frameStart > this.lastFrame) {
+          this.updateEditor(playbackSeconds);
+          this.lastFrame = frameStart;
+        }
+      });
     } else {
       if ((cursorPos + elapsed) >=
         (this.isSegmentSelection() ? selection.end : this.duration)) {
@@ -809,8 +809,11 @@ export default class {
   }
 
   drawRequest() {
-    window.requestAnimationFrame(() => {
-      this.draw(this.render());
+    window.requestAnimationFrame((frameStart) => {
+      if (frameStart > this.lastFrame) {
+        this.draw(this.render());
+        this.lastFrame = frameStart;
+      }
     });
   }
 
@@ -901,17 +904,20 @@ export default class {
               style: 'overflow: auto; position: relative;',
             },
             onscroll: (e) => {
-              const prev = this.scrollLeft;
+              this.isScrolling = true;
+              clearTimeout(this.scrollTimer);
 
-              this.scrollLeft = pixelsToSeconds(
-                e.target.scrollLeft,
-                this.samplesPerPixel,
-                this.sampleRate,
-              );
+              this.scrollTimer = setTimeout(() => {
+                this.isScrolling = false;
 
-              if (prev !== this.scrollLeft) {
+                this.scrollLeft = pixelsToSeconds(
+                  e.target.scrollLeft,
+                  this.samplesPerPixel,
+                  this.sampleRate,
+                );
+
                 this.ee.emit('scroll', this.scrollLeft);
-              }
+              }, 200);
             },
             hook: new ScrollHook(this),
           },

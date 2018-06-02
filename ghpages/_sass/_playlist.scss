@@ -15,10 +15,12 @@
 
   .channel-progress {
     background: orange;
+    will-change: transform;
   }
 
   .cursor {
     background: black;
+    will-change: transform;
   }
 
   .wp-fade {
