@@ -339,11 +339,9 @@ class AnnotationList {
         onclick: this.onAnnotationTextClick,
         oninput: this.onAnnotationTextInput,
       },
-      this.playlist.annotations.map((note, i, annotations) => {
+      this.listState.annotations.map((note, i, annotations) => {
         let segmentClass = '';
-        if (this.playlist.isPlaying() &&
-          (this.playlist.playbackSeconds >= note.start) &&
-          (this.playlist.playbackSeconds <= note.end)) {
+        if (this.listState.current === note) {
           segmentClass = '.current';
         }
 
