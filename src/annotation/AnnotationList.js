@@ -1,4 +1,5 @@
 import h from 'virtual-dom/h';
+import Thunk from 'vdom-thunk';
 
 import inputAeneas from './input/aeneas';
 import outputAeneas from './output/aeneas';
@@ -35,12 +36,21 @@ class AnnotationList {
     this.onAnnotationTextClick = this.onAnnotationTextClick.bind(this);
     this.onAnnotationTextInput = this.onAnnotationTextInput.bind(this);
     this.ondragover = this.ondragover.bind(this);
+    this.renderBoxes = this.renderBoxes.bind(this);
+    this.renderList = this.renderList.bind(this);
+
+    this.listState = {
+      annotations: this.playlist.annotations,
+      current: undefined,
+    };
 
     // TODO remove this event.
     document.addEventListener('dragover', this.ondragover);
   }
 
   updateAnnotation(id, start, end, lines, lang) {
+    console.log(`update annotation ${id}`);
+
     const samplesPerPixel = this.playlist.samplesPerPixel;
     const sampleRate = this.playlist.sampleRate;
     const pixPerSec = sampleRate / samplesPerPixel;
@@ -133,6 +143,7 @@ class AnnotationList {
         }
       }
 
+      this.touchAnnotations();
       this.playlist.drawRequest();
     });
 
@@ -148,13 +159,6 @@ class AnnotationList {
       this.export();
     });
 
-    ee.on('scroll', () => {
-      this.playlist.annotations = this.playlist.annotations.map((note) => {
-        return this.updateAnnotation(note.id, note.start, note.end, note.lines, note.lang);
-      });
-      this.playlist.drawRequest();
-    });
-
     ee.on('durationformat', (format) => {
       this.timeFormatter = timeformat(format);
       this.playlist.annotations = this.playlist.annotations.map((note) => {
@@ -164,6 +168,19 @@ class AnnotationList {
     });
 
     return ee;
+  }
+
+  touchAnnotations(annotations) {
+    if (annotations) {
+      this.playlist.annotations = annotations;
+    } else {
+      this.playlist.annotations = this.playlist.annotations.slice();
+    }
+
+    this.listState = {
+      annotations: this.playlist.annotations,
+      current: this.listState.current,
+    };
   }
 
   export() {
@@ -238,9 +255,13 @@ class AnnotationList {
       const annotationIndex = parseInt(el.parentNode.parentNode.dataset.index, 10);
       const ctrl = parseInt(el.dataset.ctrl, 10);
       const annotations = this.playlist.annotations;
-      this.controls[ctrl].action.call(this.playlist, annotations[annotationIndex], annotationIndex, annotations, {
+      const newAnnotations = this.controls[ctrl].action.call(this.playlist, annotations[annotationIndex], annotationIndex, annotations, {
         linkEndpoints: this.playlist.linkEndpoints,
       });
+
+      if (annotations !== newAnnotations) {
+        this.touchAnnotations(newAnnotations);
+      }
       this.playlist.drawRequest();
     }
   }
@@ -258,15 +279,13 @@ class AnnotationList {
     });
   }
 
-  render() {
-    const samplesPerPixel = this.playlist.samplesPerPixel;
-    const sampleRate = this.playlist.sampleRate;
-    const pixOffset = secondsToPixels(this.playlist.scrollLeft, samplesPerPixel, sampleRate) * -1;
+  renderBoxes() {
+    console.log('RENDERING BOXES');
 
-    const boxes = h('div.annotations-boxes',
+    return h('div.annotations-boxes',
       {
         attributes: {
-          style: 'height: 30px; overflow: hidden; position: relative;',
+          style: 'height: 30px; position: relative;',
         },
         onclick: this.onAnnotationBoxClick,
         ondragstart: this.onAnnotationBoxDragStart,
@@ -275,7 +294,7 @@ class AnnotationList {
       h('div.annotations-boxes-container',
         {
           attributes: {
-            style: `position: absolute; width: 100%; height: 100%; transform: translate(${pixOffset}px, 0);`,
+            style: 'position: absolute; width: 100%; height: 100%;',
           },
         },
         this.playlist.annotations.map((note, i) => {
@@ -315,9 +334,13 @@ class AnnotationList {
         }),
       ),
     );
+  }
+
+  renderList() {
+    console.log('RENDERING LIST');
 
     // TODO fix function reference.
-    const text = h('div.annotations-text',
+    return h('div.annotations-text',
       {
         hook: new ScrollTopHook(),
         onclick: this.onAnnotationTextClick,
@@ -371,6 +394,32 @@ class AnnotationList {
         );
       }),
     );
+  }
+
+  render() {
+    const samplesPerPixel = this.playlist.samplesPerPixel;
+    const sampleRate = this.playlist.sampleRate;
+
+    let current;
+    // find current annotation
+    if (this.playlist.isPlaying()) {
+      current = this.playlist.annotations.filter((note) => {
+        return (this.playlist.playbackSeconds >= note.start) &&
+                (this.playlist.playbackSeconds <= note.end);
+      });
+      current = current[0];
+    }
+
+    // only need to update if annotations or current annotation has changed.
+    if (this.listState.current !== current) {
+      this.listState = {
+        annotations: this.playlist.annotations,
+        current,
+      }
+    }
+
+    const boxes = Thunk(this.renderBoxes, this.playlist.annotations);
+    const text = Thunk(this.renderList, this.listState);
 
     return [
       boxes,

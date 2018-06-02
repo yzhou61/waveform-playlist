@@ -884,43 +884,41 @@ export default class {
       })),
     );
 
-    const children = timescale.concat(trackElements);
-
-    return h('div.playlist-tracks',
-      {
-        attributes: {
-          style: 'overflow: auto; position: relative;',
-        },
-        onscroll: (e) => {
-          const prev = this.scrollLeft;
-
-          this.scrollLeft = pixelsToSeconds(
-            e.target.scrollLeft,
-            this.samplesPerPixel,
-            this.sampleRate,
-          );
-
-          if (prev !== this.scrollLeft) {
-            this.ee.emit('scroll', this.scrollLeft);
-          }
-        },
-        hook: new ScrollHook(this),
-      },
-      children,
-    );
+    return timescale.concat(trackElements);
   }
 
   render() {
-    const containerChildren = [];
+    const trackChildren = this.renderTrackSection();
+    const [boxes, list] = this.renderAnnotations();
 
-    containerChildren.push(this.renderTrackSection());
-
-    if (this.annotations.length) {
-      containerChildren.push(this.renderAnnotations());
-    }
+    trackChildren.push(boxes);
 
     return h('div.playlist',
-      containerChildren,
+      [
+        h('div.playlist-tracks',
+          {
+            attributes: {
+              style: 'overflow: auto; position: relative;',
+            },
+            onscroll: (e) => {
+              const prev = this.scrollLeft;
+
+              this.scrollLeft = pixelsToSeconds(
+                e.target.scrollLeft,
+                this.samplesPerPixel,
+                this.sampleRate,
+              );
+
+              if (prev !== this.scrollLeft) {
+                this.ee.emit('scroll', this.scrollLeft);
+              }
+            },
+            hook: new ScrollHook(this),
+          },
+          trackChildren,
+        ),
+        list,
+      ],
     );
   }
 

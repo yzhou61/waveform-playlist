@@ -17,7 +17,7 @@ var actions = [
         }
       }
 
-      return annotations;
+      return annotations.slice();
     }
   },
   {
@@ -36,7 +36,7 @@ var actions = [
         }
       }
 
-      return annotations;
+      return annotations.slice();
     }
   },
   {
@@ -50,7 +50,7 @@ var actions = [
       annotations[i] = this.updateAnnotation(note.id, note.start, note.start + halfDuration, note.lines, note.lang);
       annotations.splice(i + 1, 0, newAnnotation);
 
-      return annotations;
+      return annotations.slice();
     }
   },
   {
@@ -59,7 +59,7 @@ var actions = [
     action: function (annotation, i, annotations) {
       annotations.splice(i, 1);
 
-      return annotations;
+      return annotations.slice();
     }
   }
 ];
