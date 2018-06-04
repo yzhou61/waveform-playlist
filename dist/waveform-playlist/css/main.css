@@ -1,7 +1,24 @@
 .playlist {
   margin: 2em 0; }
   .playlist .playlist-time-scale {
+    position: relative;
+    left: 0;
+    right: 0;
     height: 30px; }
+  .playlist .playlist-time-scale-scroll {
+    position: absolute;
+    width: 100%;
+    height: 100%; }
+    .playlist .playlist-time-scale-scroll canvas {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0; }
+    .playlist .playlist-time-scale-scroll .time {
+      position: absolute; }
+  .playlist .playlist-tracks {
+    overflow: auto;
+    position: relative; }
   .playlist .channel-wrapper {
     background: #E0EFF1; }
   .playlist .channel {

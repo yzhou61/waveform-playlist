@@ -901,9 +901,6 @@ export default class {
     const playlistChildren = [
       h('div.playlist-tracks',
         {
-          attributes: {
-            style: 'overflow: auto; position: relative;',
-          },
           onscroll: (e) => {
             this.isScrolling = true;
             clearTimeout(this.scrollTimer);

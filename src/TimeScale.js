@@ -96,7 +96,7 @@ function timescale(state) {
       timeMarkers.push(h('div.time',
         {
           attributes: {
-            style: `position: absolute; left: ${pix}px;`,
+            style: `left: ${pix}px;`,
           },
         },
         [formatTime(counter)],
@@ -115,15 +115,10 @@ function timescale(state) {
   return h('div.playlist-time-scale',
     {
       attributes: {
-        style: `position: relative; left: 0; right: 0; margin-left: ${controlWidth}px;`,
+        style: `margin-left: ${controlWidth}px;`,
       },
     },
     h('div.playlist-time-scale-scroll',
-      {
-        attributes: {
-          style: `position: absolute; width: 100%; height: 100%;`,
-        },
-      },
       [
         timeMarkers,
         h('canvas',
@@ -131,7 +126,6 @@ function timescale(state) {
             attributes: {
               width: widthX,
               height: 10,
-              style: 'position: absolute; left: 0; right: 0; bottom: 0;',
             },
             hook: new TimeScaleHook(canvasInfo, samplesPerPixel, duration, color),
           },
