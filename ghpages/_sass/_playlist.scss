@@ -1,5 +1,7 @@
 .playlist {
   margin: 2em 0;
+  overflow: hidden;
+  position: relative;
 
   .playlist-overlay {
     position: absolute;
@@ -36,7 +38,6 @@
 
   .playlist-tracks {
     overflow: auto;
-    position: relative;
   }
 
   .channel-wrapper {

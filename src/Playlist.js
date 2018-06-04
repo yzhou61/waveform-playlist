@@ -857,15 +857,33 @@ export default class {
   }
 
   renderAnnotations() {
-    return this.annotationList.render();
+    const controlWidth = this.controls.show ? this.controls.width : 0;
+    return this.annotationList.render(controlWidth);
   }
 
   renderTrackSection() {
-    const container = [];
+    return this.tracks.map(track =>
+      track.render(this.getTrackRenderData({
+        isActive: this.isActiveTrack(track),
+        shouldPlay: this.shouldTrackPlay(track),
+        soloed: this.soloedTracks.indexOf(track) > -1,
+        muted: this.mutedTracks.indexOf(track) > -1,
+      })),
+    );
+  }
+
+  render() {
+    const [boxes, list] = this.renderAnnotations();
+    const trackChildren = this.renderTrackSection();
+    const playlistChildren = [];
+
+    if (this.annotations.length) {
+      trackChildren.push(boxes);
+    }
 
     if (this.showTimescale) {
       const controlWidth = this.controls.show ? this.controls.width : 0;
-      container.push(renderTimeScale(
+      playlistChildren.push(renderTimeScale(
         this.duration,
         this.samplesPerPixel,
         this.sampleRate,
@@ -874,27 +892,7 @@ export default class {
       ));
     }
 
-    const trackElements = this.tracks.map(track =>
-      track.render(this.getTrackRenderData({
-        isActive: this.isActiveTrack(track),
-        shouldPlay: this.shouldTrackPlay(track),
-        soloed: this.soloedTracks.indexOf(track) > -1,
-        muted: this.mutedTracks.indexOf(track) > -1,
-      })),
-    );
-
-    return container.concat(trackElements);
-  }
-
-  render() {
-    const [boxes, list] = this.renderAnnotations();
-    const trackChildren = this.renderTrackSection();
-
-    if (this.annotations.length) {
-      trackChildren.push(boxes);
-    }
-
-    const playlistChildren = [
+    playlistChildren.push(
       h('div.playlist-tracks',
         {
           onscroll: (e) => {
@@ -917,7 +915,7 @@ export default class {
         },
         trackChildren,
       ),
-    ];
+    );
 
     if (this.annotations.length) {
       playlistChildren.push(list);

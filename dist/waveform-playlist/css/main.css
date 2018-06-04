@@ -1,5 +1,7 @@
 .playlist {
-  margin: 2em 0; }
+  margin: 2em 0;
+  overflow: hidden;
+  position: relative; }
   .playlist .playlist-overlay {
     position: absolute;
     top: 0;
@@ -24,8 +26,7 @@
     .playlist .playlist-time-scale-scroll .time {
       position: absolute; }
   .playlist .playlist-tracks {
-    overflow: auto;
-    position: relative; }
+    overflow: auto; }
   .playlist .channel-wrapper {
     background: #E0EFF1; }
   .playlist .waveform {

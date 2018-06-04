@@ -307,15 +307,18 @@ class AnnotationList {
     );
   }
 
-  renderBoxes() {
+  renderBoxes(annotations, controlWidth) {
     return h('div.annotations-boxes',
       {
+        attributes: {
+          style: `margin-left: ${controlWidth}px;`,
+        },
         onclick: this.onAnnotationBoxClick,
         ondragstart: this.onAnnotationBoxDragStart,
         ondragend: this.onAnnotationBoxDragEnd,
       },
       h('div.annotations-boxes-container',
-        this.playlist.annotations.map((note, i) => {
+        annotations.map((note, i) => {
           return Thunk(this.renderBox, note, i);
         }),
       ),
@@ -381,7 +384,7 @@ class AnnotationList {
     );
   }
 
-  render() {
+  render(controlWidth) {
     const samplesPerPixel = this.playlist.samplesPerPixel;
     const sampleRate = this.playlist.sampleRate;
 
@@ -395,7 +398,7 @@ class AnnotationList {
       current = current[0];
     }
 
-    const boxes = Thunk(this.renderBoxes, this.playlist.annotations);
+    const boxes = Thunk(this.renderBoxes, this.playlist.annotations, controlWidth);
     const text = Thunk(this.renderList, this.playlist.annotations, current);
 
     return [
