@@ -1,5 +1,12 @@
 .playlist {
   margin: 2em 0; }
+  .playlist .playlist-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 9; }
   .playlist .playlist-time-scale {
     position: relative;
     left: 0;
@@ -21,18 +28,47 @@
     position: relative; }
   .playlist .channel-wrapper {
     background: #E0EFF1; }
+  .playlist .waveform {
+    position: relative; }
   .playlist .channel {
-    background: grey; }
+    background: grey;
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    z-index: 1; }
+    .playlist .channel canvas {
+      float: left;
+      position: relative;
+      margin: 0;
+      padding: 0;
+      z-index: 3; }
   .playlist .channel-progress {
+    position: absolute;
+    z-index: 2;
     background: orange;
     transform: translateZ(0);
     will-change: transform; }
   .playlist .cursor {
+    position: absolute;
+    width: 1px;
+    margin: 0;
+    padding: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 5;
     background: black;
     transform: translateZ(0);
     will-change: transform; }
   .playlist .wp-fade {
-    background-color: rgba(0, 0, 0, 0.1); }
+    background-color: rgba(0, 0, 0, 0.1);
+    position: absolute;
+    height: 100%;
+    top: 0;
+    z-index: 4; }
+    .playlist .wp-fade.wp-fadein {
+      left: 0; }
+    .playlist .wp-fade.wp-fadeout {
+      right: 0; }
   .playlist .state-cursor,
   .playlist .state-select {
     cursor: text; }
@@ -42,13 +78,21 @@
     cursor: e-resize; }
   .playlist .state-shift {
     cursor: ew-resize; }
-  .playlist .selection.point {
-    background: red; }
-  .playlist .selection.segment {
-    background: rgba(0, 0, 0, 0.1); }
+  .playlist .selection {
+    position: absolute;
+    bottom: 0;
+    top: 0;
+    z-index: 4; }
+    .playlist .selection.point {
+      background: red; }
+    .playlist .selection.segment {
+      background: rgba(0, 0, 0, 0.1); }
   .playlist .channel-wrapper.silent .channel {
     opacity: 0.3; }
   .playlist .controls {
+    position: absolute;
+    left: 0;
+    z-index: 10;
     background: white;
     text-align: center; }
     .playlist .controls header {
@@ -214,9 +258,7 @@
     border: 2px solid orange; }
 
 .audio-pos {
-  font-weight: bold;
-  transform: translateZ(0);
-  display: none; }
+  font-weight: bold; }
 
 footer {
   margin-top: 2em; }

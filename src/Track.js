@@ -328,7 +328,7 @@ export default class {
 
     const config = {
       attributes: {
-        style: `position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: ${channelPixels}px; z-index: 9;`,
+        style: `width: ${channelPixels}px;`,
       },
     };
 
@@ -357,7 +357,7 @@ export default class {
     return h('div.controls',
       {
         attributes: {
-          style: `height: ${numChan * data.height}px; width: ${data.controls.width}px; position: absolute; left: 0; z-index: 10;`,
+          style: `height: ${numChan * data.height}px; width: ${data.controls.width}px;`,
         },
       }, [
         h('header', [this.name]),
@@ -410,7 +410,7 @@ export default class {
     const waveformChildren = [
       h('div.cursor', {
         attributes: {
-          style: `position: absolute; width: 1px; margin: 0; padding: 0; top: 0; transform: translate(${playbackX}px, 0); bottom: 0; z-index: 5;`,
+          style: `transform: translate(${playbackX}px, 0);`,
         },
       }),
     ];
@@ -419,7 +419,7 @@ export default class {
       const channelChildren = [
         h('div.channel-progress', {
           attributes: {
-            style: `position: absolute; width: ${width}px; transform: translate(${progressWidth - width}px, 0); height: ${data.height}px; z-index: 2;`,
+            style: `width: ${width}px; transform: translate(${progressWidth - width}px, 0); height: ${data.height}px;`,
           },
         }),
       ];
@@ -437,7 +437,6 @@ export default class {
           attributes: {
             width: currentWidth,
             height: data.height,
-            style: 'float: left; position: relative; margin: 0; padding: 0; z-index: 3;',
           },
           hook: new CanvasHook(peaks, offset, this.peaks.bits, canvasColor),
         }));
@@ -458,7 +457,7 @@ export default class {
         channelChildren.push(h('div.wp-fade.wp-fadein',
           {
             attributes: {
-              style: `position: absolute; height: ${data.height}px; width: ${fadeWidth}px; top: 0; left: 0; z-index: 4;`,
+              style: `width: ${fadeWidth}px;`,
             },
           }, [
             h('canvas',
@@ -490,7 +489,7 @@ export default class {
         channelChildren.push(h('div.wp-fade.wp-fadeout',
           {
             attributes: {
-              style: `position: absolute; height: ${data.height}px; width: ${fadeWidth}px; top: 0; right: 0; z-index: 4;`,
+              style: `width: ${fadeWidth}px;`,
             },
           },
           [
@@ -513,7 +512,7 @@ export default class {
       return h(`div.channel.channel-${channelNum}`,
         {
           attributes: {
-            style: `height: ${data.height}px; width: ${width}px; top: ${channelNum * data.height}px; left: ${startX}px; position: absolute; margin: 0; padding: 0; z-index: 1;`,
+            style: `height: ${data.height}px; width: ${width}px; top: ${channelNum * data.height}px; left: ${startX}px;`,
           },
         },
         channelChildren,
@@ -532,7 +531,7 @@ export default class {
 
       waveformChildren.push(h(`div.selection${cClassName}`, {
         attributes: {
-          style: `position: absolute; width: ${cWidth}px; bottom: 0; top: 0; left: ${cStartX}px; z-index: 4;`,
+          style: `width: ${cWidth}px; left: ${cStartX}px;`,
         },
       }));
     }
@@ -540,7 +539,7 @@ export default class {
     const waveform = h('div.waveform',
       {
         attributes: {
-          style: `height: ${numChan * data.height}px; position: relative;`,
+          style: `height: ${numChan * data.height}px;`,
         },
       },
       waveformChildren,
