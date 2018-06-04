@@ -8,7 +8,7 @@ import InlineWorker from 'inline-worker';
 import { pixelsToSeconds } from './utils/conversions';
 import LoaderFactory from './track/loader/LoaderFactory';
 import ScrollHook from './render/ScrollHook';
-import TimeScale from './TimeScale';
+import renderTimeScale from './TimeScale';
 import Track from './Track';
 import Playout from './Playout';
 import AnnotationList from './annotation/AnnotationList';
@@ -860,22 +860,18 @@ export default class {
     return this.annotationList.render();
   }
 
-  renderTimeScale() {
-    const controlWidth = this.controls.show ? this.controls.width : 0;
-
-    return TimeScale({
-      duration: this.duration,
-      samplesPerPixel: this.samplesPerPixel,
-      sampleRate: this.sampleRate,
-      color: this.colors.timeColor,
-      controlWidth,
-    });
-  }
-
   renderTrackSection() {
-    const timescale = [];
+    const container = [];
+
     if (this.showTimescale) {
-      timescale.push(this.renderTimeScale());
+      const controlWidth = this.controls.show ? this.controls.width : 0;
+      container.push(renderTimeScale(
+        this.duration,
+        this.samplesPerPixel,
+        this.sampleRate,
+        controlWidth,
+        this.colors.timeColor,
+      ));
     }
 
     const trackElements = this.tracks.map(track =>
@@ -887,7 +883,7 @@ export default class {
       })),
     );
 
-    return timescale.concat(trackElements);
+    return container.concat(trackElements);
   }
 
   render() {

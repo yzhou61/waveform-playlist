@@ -78,9 +78,7 @@ function formatTime(milliseconds) {
   return `${m}:${s}`;
 }
 
-function timescale(state) {
-  const {duration, samplesPerPixel, sampleRate, controlWidth, color} = state;
-
+function timescale(duration, samplesPerPixel, sampleRate, controlWidth, color) {
   const widthX = secondsToPixels(duration, samplesPerPixel, sampleRate);
   const pixPerSec = sampleRate / samplesPerPixel;
   const scaleInfo = getScaleInfo(samplesPerPixel);
@@ -135,19 +133,6 @@ function timescale(state) {
   );
 }
 
-function shouldUpdateState(state) {
-  if (currentState.duration === state.duration &&
-    currentState.samplesPerPixel === state.samplesPerPixel) {
-    return false;
-  }
-
-  return true;
-}
-
-export default function renderTimeScale(state) {
-  if (shouldUpdateState(state)) {
-    currentState = state;
-  }
-
-  return Thunk(timescale, currentState);
+export default function renderTimeScale(duration, samplesPerPixel, sampleRate, controlWidth, color) {
+  return Thunk(timescale, duration, samplesPerPixel, sampleRate, controlWidth, color);
 }
