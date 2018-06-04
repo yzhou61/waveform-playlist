@@ -277,11 +277,47 @@ class AnnotationList {
     });
   }
 
+  renderBox(note) {
+    return h('div.annotation-box',
+      {
+        attributes: {
+          style: `position: absolute; width: ${note.width}px; left: ${note.left}px`,
+          'data-index': note.index,
+        },
+      },
+      [
+        h('div.resize-handle.resize-w',
+          {
+            attributes: {
+              style: 'position: absolute; width: 10px; top: 0; left: -2px',
+              draggable: true,
+              'data-direction': 'left',
+            }
+          }
+        ),
+        h('span.id',
+          [
+            note.id,
+          ],
+        ),
+        h('div.resize-handle.resize-e',
+          {
+            attributes: {
+              style: 'position: absolute; width: 10px; top: 0; right: -2px',
+              draggable: true,
+              'data-direction': 'right',
+            }
+          }
+        ),
+      ],
+    );
+  }
+
   renderBoxes() {
     return h('div.annotations-boxes',
       {
         attributes: {
-          style: 'height: 30px; position: relative;',
+          style: 'position: relative;',
         },
         onclick: this.onAnnotationBoxClick,
         ondragstart: this.onAnnotationBoxDragStart,
@@ -294,39 +330,8 @@ class AnnotationList {
           },
         },
         this.playlist.annotations.map((note, i) => {
-          return h('div.annotation-box',
-            {
-              attributes: {
-                style: `position: absolute; height: 30px; width: ${note.width}px; left: ${note.left}px`,
-                'data-index': i,
-              },
-            },
-            [
-              h('div.resize-handle.resize-w',
-                {
-                  attributes: {
-                    style: 'position: absolute; height: 30px; width: 10px; top: 0; left: -2px',
-                    draggable: true,
-                    'data-direction': 'left',
-                  }
-                }
-              ),
-              h('span.id',
-                [
-                  note.id,
-                ],
-              ),
-              h('div.resize-handle.resize-e',
-                {
-                  attributes: {
-                    style: 'position: absolute; height: 30px; width: 10px; top: 0; right: -2px',
-                    draggable: true,
-                    'data-direction': 'right',
-                  }
-                }
-              ),
-            ],
-          );
+          note.index = i;
+          return Thunk(this.renderBox, note);
         }),
       ),
     );
