@@ -5,8 +5,6 @@ const Hook = function ScrollTopHook() {};
 Hook.prototype.hook = function hook(node) {
   setTimeout(() => {
     const el = document.querySelector('.current');
-    console.log(node.children[0]);
-    console.log(el);
     if (el) {
       const box = node.getBoundingClientRect();
       const row = el.getBoundingClientRect();
