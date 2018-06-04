@@ -862,7 +862,20 @@ export default class {
   }
 
   renderTrackSection() {
-    return this.tracks.map(track =>
+    const container = [];
+
+    if (this.showTimescale) {
+      const controlWidth = this.controls.show ? this.controls.width : 0;
+      container.push(renderTimeScale(
+        this.duration,
+        this.samplesPerPixel,
+        this.sampleRate,
+        controlWidth,
+        this.colors.timeColor,
+      ));
+    }
+
+    const tracks =  this.tracks.map(track =>
       track.render(this.getTrackRenderData({
         isActive: this.isActiveTrack(track),
         shouldPlay: this.shouldTrackPlay(track),
@@ -870,6 +883,8 @@ export default class {
         muted: this.mutedTracks.indexOf(track) > -1,
       })),
     );
+
+    return container.concat(tracks);
   }
 
   render() {
@@ -879,17 +894,6 @@ export default class {
 
     if (this.annotations.length) {
       trackChildren.push(boxes);
-    }
-
-    if (this.showTimescale) {
-      const controlWidth = this.controls.show ? this.controls.width : 0;
-      playlistChildren.push(renderTimeScale(
-        this.duration,
-        this.samplesPerPixel,
-        this.sampleRate,
-        controlWidth,
-        this.colors.timeColor,
-      ));
     }
 
     playlistChildren.push(

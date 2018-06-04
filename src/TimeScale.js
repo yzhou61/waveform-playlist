@@ -117,6 +117,11 @@ function timescale(duration, samplesPerPixel, sampleRate, controlWidth, color) {
       },
     },
     h('div.playlist-time-scale-scroll',
+      {
+        attributes: {
+          style: `width: ${widthX}px;`,
+        },
+      },
       [
         timeMarkers,
         h('canvas',
