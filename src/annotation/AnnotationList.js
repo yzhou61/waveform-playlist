@@ -25,7 +25,6 @@ class AnnotationList {
     // TODO actually make a real plugin system that's not terrible.
     this.playlist.isContinuousPlay = isContinuousPlay;
     this.playlist.linkEndpoints = linkEndpoints;
-    this.playlist.updateAnnotation = this.updateAnnotation.bind(this);
 
     this.prevX = 0;
     this.dragging = false;
@@ -36,13 +35,10 @@ class AnnotationList {
     this.onAnnotationTextClick = this.onAnnotationTextClick.bind(this);
     this.onAnnotationTextInput = this.onAnnotationTextInput.bind(this);
     this.ondragover = this.ondragover.bind(this);
+    this.renderBox = this.renderBox.bind(this);
     this.renderBoxes = this.renderBoxes.bind(this);
+    this.renderListItem = this.renderListItem.bind(this);
     this.renderList = this.renderList.bind(this);
-
-    this.listState = {
-      annotations: this.playlist.annotations,
-      current: undefined,
-    };
 
     // TODO remove this event.
     document.addEventListener('dragover', this.ondragover);
@@ -174,11 +170,6 @@ class AnnotationList {
     } else {
       this.playlist.annotations = this.playlist.annotations.slice();
     }
-
-    this.listState = {
-      annotations: this.playlist.annotations,
-      current: this.listState.current,
-    };
   }
 
   export() {
@@ -253,9 +244,14 @@ class AnnotationList {
       const annotationIndex = parseInt(el.parentNode.parentNode.dataset.index, 10);
       const ctrl = parseInt(el.dataset.ctrl, 10);
       const annotations = this.playlist.annotations;
-      const newAnnotations = this.controls[ctrl].action.call(this.playlist, annotations[annotationIndex], annotationIndex, annotations, {
-        linkEndpoints: this.playlist.linkEndpoints,
-      });
+      const newAnnotations = this.controls[ctrl].action.call(
+        this.playlist,
+        annotations[annotationIndex],
+        annotationIndex,
+        annotations, {
+          linkEndpoints: this.playlist.linkEndpoints,
+        }
+      );
 
       if (annotations !== newAnnotations) {
         this.touchAnnotations(newAnnotations);
@@ -277,19 +273,18 @@ class AnnotationList {
     });
   }
 
-  renderBox(note) {
+  renderBox(note, index) {
     return h('div.annotation-box',
       {
         attributes: {
-          style: `position: absolute; width: ${note.width}px; left: ${note.left}px`,
-          'data-index': note.index,
+          style: `width: ${note.width}px; left: ${note.left}px`,
+          'data-index': index,
         },
       },
       [
         h('div.resize-handle.resize-w',
           {
             attributes: {
-              style: 'position: absolute; width: 10px; top: 0; left: -2px',
               draggable: true,
               'data-direction': 'left',
             }
@@ -303,7 +298,6 @@ class AnnotationList {
         h('div.resize-handle.resize-e',
           {
             attributes: {
-              style: 'position: absolute; width: 10px; top: 0; right: -2px',
               draggable: true,
               'data-direction': 'right',
             }
@@ -316,78 +310,73 @@ class AnnotationList {
   renderBoxes() {
     return h('div.annotations-boxes',
       {
-        attributes: {
-          style: 'position: relative;',
-        },
         onclick: this.onAnnotationBoxClick,
         ondragstart: this.onAnnotationBoxDragStart,
         ondragend: this.onAnnotationBoxDragEnd,
       },
       h('div.annotations-boxes-container',
-        {
-          attributes: {
-            style: 'position: absolute; width: 100%; height: 100%;',
-          },
-        },
         this.playlist.annotations.map((note, i) => {
-          note.index = i;
-          return Thunk(this.renderBox, note);
+          return Thunk(this.renderBox, note, i);
         }),
       ),
     );
   }
 
-  renderList() {
+  renderListItem(note, isCurrent, index) {
+    let segmentClass = '';
+    if (isCurrent) {
+      segmentClass = '.current';
+    }
+
+    return h(`div.annotation${segmentClass}`,
+      {
+        attributes: {
+          'data-index': index,
+        },
+      },
+      [
+        h('span.annotation-id', [
+          note.id,
+        ]),
+        h('span.annotation-times', [
+          h('span.annotation-start', [
+            note.displayStart,
+          ]),
+          h('span.annotation-end', [
+            note.displayEnd,
+          ]),
+        ]),
+        h('span.annotation-lines',
+          {
+            attributes: {
+              contenteditable: this.editable ? true : false,
+            },
+            hook: new ContentEditableHook(note.lines.join('\n')),
+          },
+        ),
+        h('span.annotation-actions',
+          this.controls.map((ctrl, ctrlIndex) =>
+            h(`i.${ctrl.class}.anno-ctrl`, {
+              attributes: {
+                title: ctrl.title,
+                'data-ctrl': ctrlIndex,
+              },
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+
+  renderList(annotations, current) {
     return h('div.annotations-text',
       {
         hook: new ScrollTopHook(),
         onclick: this.onAnnotationTextClick,
         oninput: this.onAnnotationTextInput,
       },
-      this.listState.annotations.map((note, i, annotations) => {
-        let segmentClass = '';
-        if (this.listState.current === note) {
-          segmentClass = '.current';
-        }
-
-        return h(`div.annotation${segmentClass}`,
-          {
-            attributes: {
-              'data-index': i,
-            },
-          },
-          [
-            h('span.annotation-id', [
-              note.id,
-            ]),
-            h('span.annotation-times', [
-              h('span.annotation-start', [
-                note.displayStart,
-              ]),
-              h('span.annotation-end', [
-                note.displayEnd,
-              ]),
-            ]),
-            h('span.annotation-lines',
-              {
-                attributes: {
-                  contenteditable: this.editable ? true : false,
-                },
-                hook: new ContentEditableHook(note.lines.join('\n')),
-              },
-            ),
-            h('span.annotation-actions',
-              this.controls.map((ctrl, ctrlIndex) =>
-                h(`i.${ctrl.class}.anno-ctrl`, {
-                  attributes: {
-                    title: ctrl.title,
-                    'data-ctrl': ctrlIndex,
-                  },
-                }),
-              ),
-            ),
-          ],
-        );
+      annotations.map((note, i) => {
+        return Thunk(this.renderListItem, note, note === current, i);
       }),
     );
   }
@@ -406,16 +395,8 @@ class AnnotationList {
       current = current[0];
     }
 
-    // only need to update if annotations or current annotation has changed.
-    if (this.listState.current !== current) {
-      this.listState = {
-        annotations: this.playlist.annotations,
-        current,
-      }
-    }
-
     const boxes = Thunk(this.renderBoxes, this.playlist.annotations);
-    const text = Thunk(this.renderList, this.listState);
+    const text = Thunk(this.renderList, this.playlist.annotations, current);
 
     return [
       boxes,

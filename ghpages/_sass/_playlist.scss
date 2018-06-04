@@ -162,11 +162,19 @@
   }
 
   .annotations-boxes {
+    position: relative;
     text-align: center;
     height: 40px;
   }
 
+  .annotations-boxes-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
   .annotation-box {
+    position: absolute;
     border: 2px dashed grey;
     padding: 0 10px;
 
@@ -175,6 +183,20 @@
       opacity: 0.3;
       cursor: ew-resize;
       height: 100%;
+
+      &.resize-w {
+        position: absolute;
+        width: 10px;
+        top: 0;
+        left: -2px;
+      }
+
+      &.resize-e {
+        position: absolute;
+        width: 10px;
+        top: 0;
+        right: -2px;
+      }
     }
 
     .id {
