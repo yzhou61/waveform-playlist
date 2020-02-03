@@ -51,7 +51,9 @@ export default class {
         this.fadeGain.disconnect();
         this.volumeGain.disconnect();
         this.shouldPlayGain.disconnect();
-        this.panner.disconnect();
+        if (this.panner) {
+          this.panner.disconnect();
+        }
         this.masterGain.disconnect();
 
 
@@ -72,14 +74,25 @@ export default class {
     // used for solo/mute
     this.shouldPlayGain = this.ac.createGain();
     this.masterGain = this.ac.createGain();
-    this.panner = this.ac.createStereoPanner();
+    if (this.ac.createStereoPanner) {
+      this.panner = this.ac.createStereoPanner();
+    } else if (this.ac.createPanner) {
+      this.panner = this.ac.createPanner();
+      this.panner.type = 'equalpower';
+    } else {
+      this.panner = null;
+    }
 
     this.source.connect(this.fadeGain);
     this.fadeGain.connect(this.volumeGain);
     this.volumeGain.connect(this.shouldPlayGain);
     this.shouldPlayGain.connect(this.masterGain);
-    this.masterGain.connect(this.panner);
-    this.panner.connect(this.destination);
+    if (this.panner) {
+      this.masterGain.connect(this.panner);
+      this.panner.connect(this.destination);
+    } else {
+      this.masterGain.connect(this.destination);
+    }
 
     return sourcePromise;
   }
@@ -104,7 +117,14 @@ export default class {
 
   setStereoPanValue(value) {
     if (this.panner) {
-      this.panner.pan.value = value === undefined ? 0 : value;
+      var isStereoPannerNode = this.panner.toString().indexOf('StereoPannerNode') > -1;
+      var panValue = value === undefined ? 0 : value;
+
+      if (isStereoPannerNode) {
+        this.panner.pan.value = panValue
+      } else {
+        this.panner.setPosition(panValue, 0, 1 - Math.abs(panValue));
+      }
     }
   }
 
