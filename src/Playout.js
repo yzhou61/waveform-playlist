@@ -42,6 +42,7 @@ export default class {
 
   setUpSource() {
     this.source = this.ac.createBufferSource();
+    this.sourceStopped = true;
     this.source.buffer = this.buffer;
 
     const sourcePromise = new Promise((resolve) => {
@@ -136,11 +137,13 @@ export default class {
   */
   play(when, start, duration) {
     this.source.start(when, start, duration);
+    this.source.sourceStopped = false;
   }
 
   stop(when = 0) {
-    if (this.source) {
+    if (this.source && !this.source.sourceStopped) {
       this.source.stop(when);
+      this.sourceStopped = true;
     }
   }
 }
