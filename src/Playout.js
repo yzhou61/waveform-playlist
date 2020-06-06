@@ -48,7 +48,9 @@ export default class {
     const sourcePromise = new Promise((resolve) => {
       // keep track of the buffer state.
       this.source.onended = () => {
-        this.source.disconnect();
+        if (this.source) {
+          this.source.disconnect();
+        }
         this.fadeGain.disconnect();
         this.volumeGain.disconnect();
         this.shouldPlayGain.disconnect();

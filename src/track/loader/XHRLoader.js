@@ -25,8 +25,8 @@ export default class extends Loader {
         });
       });
 
-      xhr.addEventListener('error', () => {
-        reject(Error(`Track ${this.src} failed to load`));
+      xhr.addEventListener('error', (e) => {
+        reject(Error(`${e}: Track ${this.src.substring(0, 100)} failed to load`));
       });
     });
   }
